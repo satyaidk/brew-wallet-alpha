@@ -41,6 +41,7 @@ import { format, set } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
   buildAddSessionKey,
+  buildDCAJob,
   buildScheduleData,
   buildTokenBridge,
   buildVaultRedeem,
@@ -150,14 +151,9 @@ export default function Investments() {
           setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
         }
 
-        const investments = await getAllSessions(chainId.toString());
+        const investments = await getAllSessions(chainId.toString(), address);
         setNextSessionId(investments.length);
-        setInvestments(
-          investments.filter(
-            (investment: Investment) =>
-              investment.account.toLowerCase() === address?.toLowerCase()
-          )
-        );
+        setInvestments(investments);
         setInvestmentAdded(false);
         setToChain(chainId);
       }
@@ -536,6 +532,9 @@ export default function Investments() {
                 setIsLoading(true);
                 try {
                   const sessionKeyCall = await buildAddSessionKey(
+                    chainId.toString()
+                  );
+                  const createJobCall = await buildDCAJob(
                     chainId.toString(),
                     address,
                     investValue,
@@ -551,7 +550,7 @@ export default function Investments() {
                   );
                   await sendTransaction(
                     chainId.toString(),
-                    [sessionKeyCall],
+                    [sessionKeyCall, createJobCall],
                     validator,
                     address
                   );
@@ -581,7 +580,8 @@ export default function Investments() {
                   }
                 }
                 try {
-                  const scheduleData = await buildScheduleData(chainId.toString(), nextSessionId.toString(), getChainById(Number(fromChain))?.tokens[fromToken].address!, investValue)
+                  console.log(nextSessionId)
+                  const scheduleData = await buildScheduleData(chainId.toString(), nextSessionId)
                   await scheduleJob({ trigger: { startTime: startDate.getTime(), endTime: endDate.getTime(), interval: convertToSeconds(
                     refreshInterval,
                     Frequency[frequency].label as any

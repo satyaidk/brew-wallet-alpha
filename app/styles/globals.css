@@ -22,12 +22,15 @@
 }
 
 .bg-gradient {
-  background: rgb(0, 0, 0);
+  background: rgb(26, 18, 18);
   background: linear-gradient(
     45deg,
-    rgba(0, 0, 0, 1) 40%,
-    rgba(115, 115, 115, 1) 100%
+    rgba(5, 5, 5, 1) 0%,          /* Nearly black */
+    rgba(15, 15, 15, 1) 40%,       /* Very dark gray */
+    rgba(35, 25, 20, 1) 70%,       /* Dark muted brown */
+    rgba(60, 30, 20, 1) 100%       /* Deep, dark reddish-orange */
   );
+  
 }
 
 ::-webkit-scrollbar {
