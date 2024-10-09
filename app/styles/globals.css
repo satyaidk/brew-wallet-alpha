@@ -70,3 +70,19 @@ input::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+.button-gradient {
+  background: rgb(225, 5, 88);
+  background: linear-gradient(
+    90deg,
+    rgba(225, 5, 88, 1) 0%,
+    rgba(255, 132, 8, 1) 100%
+  );
+}
+
+.bg-clip-text {
+  background-clip: text;
+}
+.title-gradient {
+  @apply bg-gradient-to-b  from-[#ff8408] to-[#ffffffe3];
+}
