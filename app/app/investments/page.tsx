@@ -67,7 +67,7 @@ import { setHours, setMinutes } from "date-fns";
 import moment from "moment";
 import { waitForExecution } from "@/app/logic/permissionless";
 import { Switch } from "@/components/ui/switch";
-import { Transaction } from "viem";
+import { Transaction, zeroAddress } from "viem";
 
 type Investment = {
   address: string;
@@ -380,7 +380,7 @@ export default function Investments() {
                         <SelectValue placeholder="From Chain" />
                       </SelectTrigger>
                       <SelectContent>
-                        {tokenVaultDetails.map((from, f) => (
+                        {getChainById(Number(fromChain))?.tokens.map((from, f) => (
                           <SelectItem key={f} value={f.toString()}>
                             <div className="flex flex-row justify-center items-center gap-2">
                               <Image
@@ -545,8 +545,8 @@ export default function Investments() {
                       Frequency[frequency].label as any
                     ),
                     getChainById(Number(fromChain))?.tokens[fromToken].address!,
-                    tokenVaultDetails[targetToken].address!,
-                    tokenVaultDetails[targetToken].vault!
+                    getChainById(Number(fromChain))?.tokens[targetToken].address!,
+                    getChainById(Number(fromChain))?.tokens[targetToken].vault ?? ZeroAddress
                   );
                   await sendTransaction(
                     chainId.toString(),
@@ -556,6 +556,7 @@ export default function Investments() {
                   );
                 
                 } catch (error) {
+                  console.log(error)
                   if (
                     error instanceof WaitForUserOperationReceiptTimeoutError
                   ) {
