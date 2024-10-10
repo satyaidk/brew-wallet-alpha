@@ -4,15 +4,11 @@ import "./styles/globals.css";
 import { headers } from "next/headers";
 import localFont from "next/font/local";
 import { cookieToInitialState } from "wagmi";
-
 import { config } from "@/app/wallet-connect/config";
 import Web3ModalProvider from "@/app/wallet-connect/context";
 import { LoginProvider } from "./context/LoginProvider";
-import Footer from "./components/Footer/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import ShineBorder from "@/components/ui/shine-border";
-import DotPattern from "@/components/ui/dot-pattern";
-import { cn } from "@/lib/utils";
 
 const human_sans = localFont({
   src: [
@@ -106,20 +102,15 @@ export default function RootLayout({
           borderRadius={0}
           borderWidth={4}
         >
-          <div className=" text-white max-w-screen-2xl mx-auto z-50">
+          <div className=" text-white max-w-screen-2xl w-full mx-auto z-50">
             <div className=" flex flex-col items-center justify-center w-full">
               <Web3ModalProvider initialState={initialState}>
                 <LoginProvider>{children}</LoginProvider>
               </Web3ModalProvider>
             </div>
           </div>
-          <Footer />
         </ShineBorder>
-        <DotPattern
-          className={cn(
-            "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)] fill-neutral-400/80 z-0"
-          )}
-        />
+
         <Toaster />
       </body>
     </html>

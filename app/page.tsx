@@ -15,6 +15,9 @@ import {
   useDisconnect,
 } from "./context/LoginProvider";
 import TypingAnimation from "@/components/magicui/typing-animation";
+import DotPattern from "@/components/ui/dot-pattern";
+import { cn } from "@/lib/utils";
+import Footer from "./components/Footer/Footer";
 
 export default function Home() {
   const { address, isConnecting, isDisconnected } = useAccount();
@@ -121,6 +124,12 @@ export default function Home() {
           )}
         </div>
       </div>
+      <DotPattern
+        className={cn(
+          "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)] fill-neutral-400/80 z-0"
+        )}
+      />
+      <Footer />
     </div>
   );
 }

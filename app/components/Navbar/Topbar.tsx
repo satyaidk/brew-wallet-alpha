@@ -44,12 +44,12 @@ export default function Topbar() {
       <div className="flex w-full md:hidden">
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetTrigger asChild>
-            <div className="flex flex-row justify-between items-center w-full p-0">
+            <div className="flex flex-row justify-between items-center w-full pt-2">
               <Image
-                src={"/logo/logo-without-tagline.svg"}
+                src={"/logo/icon.svg"}
                 alt="ZeroWallet Logo"
-                width={120}
-                height={110}
+                width={50}
+                height={50}
               />
               <button className="flex items-center justify-center rounded-md bg-background text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none">
                 <span className="sr-only">Open main menu</span>
@@ -69,7 +69,7 @@ export default function Topbar() {
                 <div
                   key={link.name}
                   className={`flex flex-row gap-4 items-center justify-start pr-4 py-4 bg-black text-white ${
-                    pathname === link.href ? "font-bold" : "font-light"
+                    pathname === link.href ? "font-bold" : "font-normal"
                   }`}
                   onClick={() => {
                     setDrawerOpen(false);
@@ -82,7 +82,7 @@ export default function Topbar() {
               ))}
               <div
                 className={`flex flex-row gap-4 items-center justify-start pr-4 py-4 bg-black text-white ${
-                  pathname === "/app/settings" ? "font-bold" : "font-light"
+                  pathname === "/app/settings" ? "font-bold" : "font-normal"
                 }`}
                 onClick={() => {
                   setDrawerOpen(false);
