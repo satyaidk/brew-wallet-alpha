@@ -127,7 +127,7 @@ const gasChainsTokens: GasChainType[] = [
         address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
         icon: "/tokens/weth.png",
         vault: "0x305F25377d0a39091e99B975558b1bdfC3975654",
-        decimals: 6,
+        decimals: 18,
       },
       {
         name: "USDC",
@@ -146,7 +146,7 @@ const gasChainsTokens: GasChainType[] = [
   {
     name: "Polygon Fork",
     address: "0xBBE5A39eD493150Be69D31Aa8780218247794152",
-    chainId: 20889,
+    chainId: 1370,
     icon: "/chains/polygon.png",
     endpointId: "40137",
     tokens: [
@@ -175,7 +175,7 @@ const gasChainsTokens: GasChainType[] = [
         address: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
         icon: "/tokens/weth.png",
         vault: "0x305F25377d0a39091e99B975558b1bdfC3975654",
-        decimals: 6,
+        decimals: 18,
       },
       {
         name: "USDC",
