@@ -836,12 +836,12 @@ export default function Investments() {
         className="mb-6"
       />
       <h3 className="text-2xl font-bold mb-2">No Active Investment Plans</h3>
-      <p className="text-accent mb-4">You don't have any active investment plans at the moment.</p>
+      <p className="text-accent mb-4">You do not have any active investment plans at the moment.</p>
       <button 
         onClick={() => setDialogOpen(true)}
         className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white"
       >
-        Create Your First Plan
+        Create Your Plan
       </button>
     </div>
   )}
