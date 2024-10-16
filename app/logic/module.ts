@@ -1,7 +1,7 @@
-import { Contract, formatUnits, Interface, parseUnits } from "ethers";
+import { Contract, formatUnits, getBytes, Interface, parseUnits } from "ethers";
 import { getJsonRpcProvider } from "./web3";
 import TokenVault from "./TokenVault.json";
-import {  Address, Hex, SendTransactionParameters, pad } from "viem";
+import {  Address, Hex, SendTransactionParameters, createPublicClient, encodeAbiParameters, pad, http } from "viem";
 import {
     getClient,
     getModule,
@@ -11,18 +11,22 @@ import {
     ModuleType,
   } from "@rhinestone/module-sdk";
 import { NetworkUtil } from "./networks";
-import AutoDCAModule from "./AutoDCASessionModule.json";
+import AutoDCAExecutor from "./AutoDCAExecutor.json";
+import SessionValidator from "./SessionValidator.json";
 import OFT from "./OFT.json";
+import EntryPoint from "./EntryPoint.json"
 
-import { SafeSmartAccountClient, getSmartAccountClient } from "./permissionless";
-import { buildTransferToken, getRedeemBalance, getTokenDecimals, getVaultBalance, getVaultRedeemBalance } from "./utils";
+
+import { SafeSmartAccountClient, getChain, getSmartAccountClient } from "./permissionless";
+import { buildTransferToken, getRedeemBalance, getTokenDecimals, getVaultBalance, getVaultRedeemBalance, publicClient } from "./utils";
 import { getDetails } from "./jobsAPI";
+import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation } from "permissionless";
 
 
 const webAuthnModule = "0xD990393C670dCcE8b4d8F858FB98c9912dBFAa06"
-// const autoDCAModule = "0x679f144fCcc63c5Af7bcDb2BAda756f1bd40CE3D"
-const autoDCAModule = "0xBdE994684051A3caDa9b90Ede0b44A06A9FAC863"
-// const sessionKey = "0x3A38A4611F911523efe3cF42eBCE8fA3912b6e8e"
+const autoDCAExecutor = "0x588532f232ED5E9e24B48116CA18AEca347E80e2"
+const sessionValidator = "0xa128f9A221c8A0fC13eC23525511ee1448402eBf"
+import { getChainId, signMessage } from "viem/actions"
 
 
 
@@ -34,14 +38,15 @@ export interface Transaction {
 
 export const getModules = async (validator: any) => {
 
+  
   const validators = [{ address: validator.address,
      context: await validator.getEnableData()}, 
-     { address: autoDCAModule,
+     { address: sessionValidator,
       context: '0x' as Hex}]
 
     const executors = 
       [
-     { address: autoDCAModule as Hex,
+     { address: autoDCAExecutor as Hex,
       context: '0x' as Hex}]
 
       return { validators, executors }
@@ -50,38 +55,34 @@ export const getModules = async (validator: any) => {
 export const getSessionData = async (chainId: string, sessionId: string): Promise<any> => {
 
 
-  const bProvider = await getJsonRpcProvider(chainId)
+  const provider = await getJsonRpcProvider(chainId)
   const  { address} = await getDetails()
 
-  console.log(address)
 
   const autoDCA = new Contract(
-      autoDCAModule,
-      AutoDCAModule.abi,
-      bProvider
+      autoDCAExecutor,
+      AutoDCAExecutor.abi,
+      provider
   )
 
-  const sesionData = await autoDCA.sessionKeyData(address, sessionId);
+  const sesionData = await autoDCA.getJobData(address);
   return sesionData;
 }
 
 
-export const getAllSessions = async (chainId: string): Promise<any> => {
+export const getAllJobs = async (chainId: string, safeAccount: string): Promise<any> => {
 
 
-  const bProvider = await getJsonRpcProvider(chainId)
-  const  { address } = await getDetails()
-  console.log(address)
-
+  const provider = await getJsonRpcProvider(chainId)
 
   const autoDCA = new Contract(
-      autoDCAModule,
-      AutoDCAModule.abi,
-      bProvider
+      autoDCAExecutor,
+      AutoDCAExecutor.abi,
+      provider
   )
 
-  const sesionData = await autoDCA.getSessionData(address);
-  return sesionData;
+  const jobData = await autoDCA.getJobData(safeAccount);
+  return jobData;
 }
 
 
@@ -91,11 +92,36 @@ export const sendTransaction = async (chainId: string, calls: Transaction[], wal
 
     // const call = { to: to as Hex, value: value, data: data }
 
+
+    const bProvider = await getJsonRpcProvider(chainId)
+    console.log(await bProvider.getBlock('latest'))
+
+
     const key = BigInt(pad(webAuthnModule as Hex, {
         dir: "right",
         size: 24,
       }) || 0
     )
+
+    const signUserOperation = async function signUserOperation(userOperation: UserOperation<"v0.7">) {
+      
+
+      const provider = await getJsonRpcProvider(chainId)
+  
+      const entryPoint = new Contract(
+          ENTRYPOINT_ADDRESS_V07,
+          EntryPoint.abi,
+          provider
+      )
+      
+      let typedDataHash = getBytes(await entryPoint.getUserOpHash(getPackedUserOperation(userOperation)))
+
+      console.log(await entryPoint.getUserOpHash(getPackedUserOperation(userOperation)))
+
+
+      const client =  publicClient(parseInt(chainId))
+      return await signMessage(client, { account: walletProvider, message:  {  raw: await entryPoint.getUserOpHash(getPackedUserOperation(userOperation)) } }) 
+      }
 
 
     const smartAccount = await getSmartAccountClient( { chainId, nonceKey: key, address: safeAccount, signUserOperation: walletProvider.signUserOperation, getDummySignature: walletProvider.getDummySignature, 
@@ -144,51 +170,67 @@ export const buildTokenBridge = async (chainId: string,  safeAccount: string, of
   }
 }
 
-export const buildAddSessionKey = async (chainId: string,  safeAccount: string, amount: string, validAfter: number, validUntil: number, refreshInterval: number, fromToken: string, targetToken: string, vault: string): Promise<Transaction> => {
+export const buildAddSessionKey = async (chainId: string): Promise<Transaction> => {
 
-    
-  const provider = await getJsonRpcProvider(chainId);
   const  { address } = await getDetails()
+  const execCallData = new Interface(AutoDCAExecutor.abi).encodeFunctionData('executeJob', [0])
+  const currentTime = Math.floor(Date.now()/1000)
+  const sessionKeyData = { target: autoDCAExecutor as Hex, funcSelector: execCallData.slice(0, 10) as Hex, validAfter: 0, validUntil: currentTime + 86400, active: true }
 
-  const parsedAmount = parseUnits(amount, await  getTokenDecimals(fromToken, provider))
 
-  const sessionData = { vault: vault, token: fromToken, targetToken: targetToken,  account: safeAccount, validAfter: validAfter, validUntil: validUntil, limitAmount: parsedAmount, limitUsed: 0, lastUsed: 0, refreshInterval: refreshInterval }
+  const provider = await getJsonRpcProvider(chainId);
 
-  const autoDCA = new Contract(
-      autoDCAModule,
-      AutoDCAModule.abi,
+  const sessionKeyValidator = new Contract(
+       sessionValidator,
+       SessionValidator.abi,
       provider
   )
 
   return {
-      to: autoDCAModule,
+      to: sessionValidator,
       value: BigInt(0),
-      data: (await autoDCA.addSessionKey.populateTransaction(address, sessionData)).data as Hex
+      data: (await sessionKeyValidator.enableSessionKey.populateTransaction(address, sessionKeyData)).data as Hex
+  }
+}
+
+export const buildDCAJob = async (chainId: string,  safeAccount: string, amount: string, validAfter: number, validUntil: number, refreshInterval: number, fromToken: string, targetToken: string, vault: string): Promise<Transaction> => {
+
+    
+  const provider = await getJsonRpcProvider(chainId);
+
+  console.log(await getTokenDecimals(fromToken, provider))
+
+  const parsedAmount = parseUnits(amount, await  getTokenDecimals(fromToken, provider))
+
+  const sessionData = { vault: vault, token: fromToken, targetToken: targetToken,  account: safeAccount, validAfter: validAfter, validUntil: validUntil, limitAmount: parsedAmount, refreshInterval: refreshInterval }
+
+  console.log(sessionData)
+  const autoDCA = new Contract(
+      autoDCAExecutor,
+      AutoDCAExecutor.abi,
+      provider
+  )
+
+  return {
+      to: autoDCAExecutor,
+      value: BigInt(0),
+      data: (await autoDCA.createJob.populateTransaction(sessionData)).data as Hex
   }
 }
 
 
-export const buildScheduleData = async (chainId: string,  sessionId: string, fromToken: string, amount: string): Promise<Transaction> => {
+export const buildScheduleData = async (chainId: string,  jobId: number): Promise<Transaction> => {
 
     
+  console.log(jobId)
   const provider = await getJsonRpcProvider(chainId);
-  const  { address } = await getDetails()
 
-  console.log(address)
+    const execCallData = new Interface(AutoDCAExecutor.abi).encodeFunctionData('executeJob', [jobId])
 
-  const parsedAmount = parseUnits(amount, await  getTokenDecimals(fromToken, provider))
-
-
-    const data = await buildTransferToken(fromToken, address, parsedAmount, provider);
-                const abi = [
-        'function execute(address sessionKey, uint256 sessionId, address to, uint256 value, bytes calldata data) external',
-      ]
-
-    const execCallData = new Interface(abi).encodeFunctionData('execute', [ address, parseInt(sessionId), fromToken, BigInt(0), data])
 
 
   return {
-      to: autoDCAModule,
+      to: autoDCAExecutor,
       value: BigInt(0),
       data: execCallData as Hex
   }

@@ -28,6 +28,7 @@
     rgba(225, 5, 88, 1) 0%,
     rgba(255, 132, 8, 1) 100%
   );
+  
 }
 .text-gradient {
   @apply bg-gradient-to-r from-[#ff8408] to-[#E10558];

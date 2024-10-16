@@ -2,7 +2,7 @@ import { Hex } from 'viem';
 import { getData, postData, deleteData } from '../utils/fetch';
 
 // Define the base URL of your API
-// const BASE_URL = 'https://api.usezero.xyz';
+// const BASE_URL = 'https://api.zenguard.xyz';
 const BASE_URL = 'http://localhost:8080'; // Change to your actual API base URL
 
 // Helper function to get headers with Bearer token
