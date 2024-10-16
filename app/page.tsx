@@ -14,7 +14,6 @@ import {
   useAccount,
   useDisconnect,
 } from "./context/LoginProvider";
-import TypingAnimation from "@/components/magicui/typing-animation";
 import DotPattern from "@/components/ui/dot-pattern";
 import { cn } from "@/lib/utils";
 import Footer from "./components/Footer/Footer";
