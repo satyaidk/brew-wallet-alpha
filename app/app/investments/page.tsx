@@ -95,8 +95,7 @@ export default function Investments() {
   const [isLoading, setIsLoading] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [investValue, setInvestValue] = useState<string>("0");
-  const [investmentAdded, setInvestmentAdded] = useState(true);
-  const [fromChain, setFromChain] = useState<number>(chainId);
+  const [investmentAdded, setInvestmentAdded] = useState(false);
   const [toChain, setToChain] = useState<number>(chainId);
   const [fromToken, setFromToken] = useState<number>(0);
   const [balance, setBalance] = useState<string>("0");
@@ -124,25 +123,27 @@ export default function Investments() {
   useEffect(() => {
     (async () => {
       const provider = await getJsonRpcProvider(chainId.toString());
-      const token = getChainById(Number(fromChain))?.tokens[fromToken].address;
+      const token = getChainById(Number(chainId))?.tokens[fromToken].address;
       if (token == ZeroAddress) {
         setBalance(formatEther(await provider.getBalance(address)));
       } else {
         setBalance(await getTokenBalance(token!, address, provider));
       }
     })();
-  }, [fromChain, fromToken]);
+  }, [chainId, fromToken]);
 
   useEffect(() => {
     (async () => {
-      if (investmentAdded) {
+      console.log(investmentAdded)
+      if (!investmentAdded) {
         const provider = await getJsonRpcProvider(chainId.toString());
-        let tokensWithVault = getChainById(Number(fromChain))?.tokens.filter(
+        let tokensWithVault = getChainById(Number(chainId))?.tokens.filter(
           (token: any) => token.vault != undefined
         );
+        let updatedTokens = []
 
         if (tokensWithVault) {
-          const updatedTokens = await Promise.all(
+           updatedTokens = await Promise.all(
             tokensWithVault.map(async (token) => {
               const vaultBalance = await getVaultBalance(
                 token.vault!,
@@ -158,15 +159,21 @@ export default function Investments() {
 
           setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
         }
+        }
 
-        const investments = await getAllJobs(chainId.toString(), address);
+        let investments = [[],[]]
+        try {        
+        investments = await getAllJobs(chainId.toString(), address);
+        } catch(e) {
+          //pass
+        }
         setNextSessionId(investments[0].length);
         setInvestments(investments[0]);
         setJobExecutions(investments[1]);
 
         setInvestmentAdded(false);
         setToChain(chainId);
-      }
+      
     })();
   }, [chainId, address, investmentAdded]);
 
@@ -257,371 +264,14 @@ export default function Investments() {
 
   return (
     <div className="flex flex-col gap-6 justify-start p-4 items-start border border-accent w-full h-full">
-      <div className="flex flex-row justify-between items-center w-full">
-        <h3 className="font-bold text-2xl">Interest bearing investments</h3>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger>
-            <button className="bg-black text-white py-2 px-2 md:px-6 font-medium text-lg flex flex-row justify-center items-center gap-2 border border-black hover:border-accent hover:bg-transparent hover:text-white">
-              <PlusSquareIcon />{" "}
-              <span className="hidden md:block">Create a Plan</span>
-            </button>
-          </DialogTrigger>
-          <DialogContent className="bg-black dark:bg-white flex flex-col justify-start items-start gap-4 rounded-none sm:rounded-none max-w-lg mx-auto border border-accent">
-            <DialogHeader className="space-y-1">
-              <DialogTitle className="text-white text-xl">
-                Create a Investment
-              </DialogTitle>
-              <DialogDescription className="text-base text-accent mt-0">
-                Create a new investment plan to store your assets and earn
-                yield.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col border border-accent divide-y divide-accent gap-px">
-              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div className="flex flex-row justify-start items-center gap-1 text-accent">
-                    <div className="text-accent">Invest</div>
-                    <BadgeInfo size={14} />
-                  </div>
-                </div>
-                <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <input
-                    type="text"
-                    // placeholder={0.01}
-                    value={investValue}
-                    className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                    onChange={(e) => setInvestValue(e.target.value)}
-                  />
-                  <div className="flex flex-row justify-center items-center gap-2">
-                    <Select
-                      value={fromChain.toString()}
-                      onValueChange={(e) => {
-                        setFromChain(parseInt(e));
-                        setChainId(parseInt(e));
-                        setInvestmentAdded(true);
-                        setFromToken(0);
-                      }}
-                    >
-                      <SelectTrigger className=" w-28 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="From Chain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gasChainsTokens.map((from, f) => (
-                          <SelectItem key={f} value={from.chainId.toString()}>
-                            <div className="flex flex-row justify-center items-center gap-2">
-                              <Image
-                                className="bg-white rounded-full"
-                                src={from.icon}
-                                alt={from.name}
-                                width={25}
-                                height={25}
-                              />
-                              <h3 className="truncate">{from.name}</h3>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select
-                      value={fromToken.toString()}
-                      onValueChange={(e) => {
-                        setFromToken(parseInt(e));
-                      }}
-                    >
-                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="From Token" />
-                      </SelectTrigger>
 
-                      <SelectContent>
-                        {getChainById(Number(fromChain))?.tokens.map(
-                          (from, f) => (
-                            <SelectItem key={f} value={f.toString()}>
-                              <div className="flex flex-row justify-center items-center gap-2">
-                                <Image
-                                  className="bg-white rounded-full"
-                                  src={from.icon}
-                                  alt={from.name}
-                                  width={25}
-                                  height={25}
-                                />
-                                <h3 className="truncate uppercase">
-                                  {from.name}
-                                </h3>
-                              </div>
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+      { Boolean(tokenVaultDetails.filter(tokenVault => tokenVault.vaultBalance > 0).length) && <h3 className="font-bold text-2xl mt-6">Interest bearing investements</h3> }
 
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div className="text-accent">
-                    ${Number(balance).toFixed(8)}
-                  </div>
-                  <div className="flex flex-row justify-center items-center gap-2 text-accent">
-                    <Wallet2 size={16} />
-                    <h5>{Number(balance).toFixed(8)}</h5>
-                  </div>
-                </div>
-              </div>
-
-              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                  <div className="text-accent">Buy</div>
-                  <BadgeInfo size={14} />
-                </div>
-                <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <input
-                    type="number"
-                    disabled
-                    placeholder=""
-                    className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                  />
-                  <div className="flex flex-row justify-center items-center gap-2">
-                    <Select
-                      value={targetToken.toString()}
-                      onValueChange={(e) => {
-                        setTargetToken(parseInt(e));
-                      }}
-                    >
-                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="From Chain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getChainById(Number(fromChain))?.tokens.map((from, f) => (
-                          <SelectItem key={f} value={f.toString()}>
-                            <div className="flex flex-row justify-center items-center gap-2">
-                              <Image
-                                className="bg-white rounded-full"
-                                src={from.icon}
-                                alt={from.name}
-                                width={25}
-                                height={25}
-                              />
-                              <h3 className="truncate">{from.name}</h3>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                  <div className="text-accent">Every</div>
-                  <BadgeInfo size={14} />
-                </div>
-                <div className="flex flex-row justify-between items-center gap-2 w-full">
-                  <input
-                    type="number"
-                    value={refreshInterval}
-                    onChange={(e) =>
-                      setRefreshInterval(parseInt(e.target.value))
-                    }
-                    className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                  />
-                  <div className="flex flex-row justify-center items-center gap-2">
-                    <Select
-                      value={frequency.toString()}
-                      onValueChange={(e) => {
-                        console.log(e);
-                        setFrequency(parseInt(e));
-                      }}
-                    >
-                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="Frequency" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Frequency.map((frequency, fre) => {
-                          return (
-                            <SelectItem key={fre} value={fre.toString()}>
-                              {frequency.label}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-row divide-x divide-accent">
-                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
-                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                    <div className="text-accent">Start Date</div>
-                    <BadgeInfo size={14} />
-                  </div>
-                  <div className="flex flex-row justify-between items-center gap-2 w-full mt-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className={cn(
-                            "w-fit justify-start text-left font-normal flex flex-row items-center border-accent text-white border-0"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4 text-white" />
-                          {startDate ? (
-                            format(startDate, "PPP") +
-                            " " +
-                            moment(startTimeValue, "HH:mm:ss").format("hh:mm A")
-                          ) : (
-                            <span className="text-white">Pick start date</span>
-                          )}
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <div className="w-full flex flex-row justify-center items-center mt-4">
-                          <input
-                            className="focus:outline-none text-black bg-transparent w-28"
-                            type="time"
-                            value={startTimeValue}
-                            onChange={handleStartTimeChange}
-                          />
-                        </div>
-                        <Calendar
-                          mode="single"
-                          selected={startDate}
-                          onSelect={handleStartDaySelect}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
-                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                    <div className="text-accent">End Date</div>
-                    <BadgeInfo size={14} />
-                  </div>
-                  <div className="flex flex-row justify-between items-center gap-2 w-full mt-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className={cn(
-                            "w-fit justify-start text-left font-normal flex flex-row items-center border-accent text-white border-0"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4 text-white" />
-                          {endDate ? (
-                            format(endDate, "PPP") +
-                            " " +
-                            moment(endTimeValue, "HH:mm:ss").format("hh:mm A")
-                          ) : (
-                            <span className="text-white">Pick end date</span>
-                          )}
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <div className="w-full flex flex-row justify-center items-center mt-4">
-                          <input
-                            className="focus:outline-none text-black bg-transparent w-28"
-                            type="time"
-                            value={endTimeValue}
-                            onChange={handleEndTimeChange}
-                          />
-                        </div>
-                        <Calendar
-                          mode="single"
-                          selected={endDate}
-                          onSelect={handleEndDaySelect}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button
-              className="bg-transparent py-3 w-full bg-white text-black border border-accent hover:bg-transparent hover:text-white text-lg"
-              disabled={isLoading}
-              onClick={async () => {
-                setIsLoading(true);
-                try {
-                  const sessionKeyCall = await buildAddSessionKey(
-                    chainId.toString()
-                  );
-                  const createJobCall = await buildDCAJob(
-                    chainId.toString(),
-                    address,
-                    investValue,
-                    Math.floor(startDate.getTime() / 1000),
-                    Math.floor(endDate.getTime() / 1000),
-                    convertToSeconds(
-                      refreshInterval,
-                      Frequency[frequency].label as any
-                    ),
-                    getChainById(Number(fromChain))?.tokens[fromToken].address!,
-                    getChainById(Number(fromChain))?.tokens[targetToken].address!,
-                    getChainById(Number(fromChain))?.tokens[targetToken].vault ?? ZeroAddress
-                  );
-                  await sendTransaction(
-                    chainId.toString(),
-                    [sessionKeyCall, createJobCall],
-                    validator,
-                    address
-                  );
-                
-                } catch (error) {
-                  console.log(error)
-                  if (
-                    error instanceof WaitForUserOperationReceiptTimeoutError
-                  ) {
-                    const hashPattern = /hash\s"([^"]+)"/;
-                    const match = error.message.match(hashPattern);
-
-                    if (match && match[1]) {
-                      const transactionHash = match[1];
-                      console.log("Transaction hash:", transactionHash);
-                      await waitForExecution(
-                        fromChain.toString(),
-                        transactionHash
-                      );
-                    } else {
-                      console.error(
-                        "No transaction hash found in the error message."
-                      );
-                    }
-                    // console.error("User operation timed out:", error.message);
-                  } else {
-                    console.log("Something went bad");
-                  }
-                }
-                try {
-                  const scheduleData = await buildScheduleData(chainId.toString(), nextSessionId)
-                  await scheduleJob({ trigger: { startTime: Math.floor(startDate.getTime() / 1000), endTime: Math.floor(endDate.getTime() / 1000), interval: convertToSeconds(
-                    refreshInterval,
-                    Frequency[frequency].label as any
-                  ) }, data: { call: { to: scheduleData.to, value: Number(scheduleData.value), data: scheduleData.data }, chainId: chainId.toString(), account: address }});
-
-                  setDialogOpen(false);
-                } catch (e) {
-                  console.log("Schedule failed");
-                }
-                setInvestmentAdded(true);
-                setIsLoading(false);
-              }}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Creating your investement plan...
-                </span>
-              ) : (
-                "Create Plan"
-              )}
-            </button>
-          </DialogContent>
-        </Dialog>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-white w-full">
-        {tokenVaultDetails.map((tokenVault, index) => (
+        {tokenVaultDetails.filter(tokenVault => tokenVault.vaultBalance > 0).map((tokenVault, index) => (
           <div
             key={index}
-            className=" w-full flex flex-col gap-0 border border-accent"
+            className="border-accent rounded-lg  w-full flex flex-col gap-0 border border-accent"
           >
             <div className="flex flex-row justify-between items-center px-4 py-3 border-b border-accent">
               <div className="flex flex-row justify-start items-center gap-2">
@@ -788,12 +438,12 @@ export default function Investments() {
         ))}
       </div>
       <div className="flex flex-col gap-2 flex-grow w-full">
-        {investments.length > 0 && (
-          <h3 className="font-bold text-2xl">Investment Plans</h3>
-        )}
+      
+          <h3 className="font-bold text-2xl mb-4">Investment Plans</h3>
+        
 
     <Tabs defaultValue="active" className="w-full flex flex-col gap-4 h-full">
-
+    <div className="flex gap-x-6 items-center">
           <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-2 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold">
             <TabsTrigger
               className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
@@ -807,9 +457,343 @@ export default function Investments() {
             >
               History
             </TabsTrigger>
+            
           </TabsList>
 
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger>
+            <button className="bg-black text-white py-2 px-2 md:px-6 font-medium text-lg flex flex-row justify-center items-center gap-2 border border-black hover:border-accent hover:bg-transparent hover:text-white">
+              <PlusSquareIcon />{" "}
+              <span className="hidden md:block">Create a Plan</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="bg-black dark:bg-white flex flex-col justify-start items-start gap-4 rounded-none sm:rounded-none max-w-lg mx-auto border border-accent">
+            <DialogHeader className="space-y-1">
+              <DialogTitle className="text-white text-xl">
+                Create a Investment
+              </DialogTitle>
+              <DialogDescription className="text-base text-accent mt-0">
+                Create a new investment plan to store your assets and earn
+                yield.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col border border-accent  divide-y divide-accent gap-px">
+              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
+                <div className="flex flex-row justify-between items-center text-sm">
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent">
+                    <div className="text-accent">Invest</div>
+                    <BadgeInfo size={14} />
+                  </div>
+                </div>
+                <div className="flex flex-row justify-between items-center gap-2 w-full">
+                  <input
+                    type="text"
+                    // placeholder={0.01}
+                    value={investValue}
+                    className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                    onChange={(e) => setInvestValue(e.target.value)}
+                  />
+                  <div className="flex flex-row justify-center items-center gap-2">
+                    <Select
+                      value={fromToken.toString()}
+                      onValueChange={(e) => {
+                        setFromToken(parseInt(e));
+                      }}
+                    >
+                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                        <SelectValue placeholder="From Token" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {getChainById(Number(chainId))?.tokens.map(
+                          (from, f) => (
+                            <SelectItem key={f} value={f.toString()}>
+                              <div className="flex flex-row justify-center items-center gap-2">
+                                <Image
+                                  className="bg-white rounded-full"
+                                  src={from.icon}
+                                  alt={from.name}
+                                  width={25}
+                                  height={25}
+                                />
+                                <h3 className="truncate uppercase">
+                                  {from.name}
+                                </h3>
+                              </div>
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex flex-row justify-between items-center text-sm">
+                  <div className="text-accent">
+                    ${Number(balance).toFixed(8)}
+                  </div>
+                  <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                    <Wallet2 size={16} />
+                    <h5>{Number(balance).toFixed(8)}</h5>
+                  </div>
+                </div>
+              </div>
+
+              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
+                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                  <div className="text-accent">Buy</div>
+                  <BadgeInfo size={14} />
+                </div>
+                <div className="flex flex-row justify-between items-center gap-2 w-full">
+                  <input
+                    type="number"
+                    disabled
+                    placeholder=""
+                    className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                  />
+                  <div className="flex flex-row justify-center items-center gap-2">
+                    <Select
+                      value={targetToken.toString()}
+                      onValueChange={(e) => {
+                        setTargetToken(parseInt(e));
+                      }}
+                    >
+                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                        <SelectValue placeholder="From Chain" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getChainById(Number(chainId))?.tokens.map((from, f) => (
+                          <SelectItem key={f} value={f.toString()}>
+                            <div className="flex flex-row justify-center items-center gap-2">
+                              <Image
+                                className="bg-white rounded-full"
+                                src={from.icon}
+                                alt={from.name}
+                                width={25}
+                                height={25}
+                              />
+                              <h3 className="truncate">{from.name}</h3>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
+                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                  <div className="text-accent">Every</div>
+                  <BadgeInfo size={14} />
+                </div>
+                <div className="flex flex-row justify-between items-center gap-2 w-full">
+                  <input
+                    type="number"
+                    value={refreshInterval}
+                    onChange={(e) =>
+                      setRefreshInterval(parseInt(e.target.value))
+                    }
+                    className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                  />
+                  <div className="flex flex-row justify-center items-center gap-2">
+                    <Select
+                      value={frequency.toString()}
+                      onValueChange={(e) => {
+                        console.log(e);
+                        setFrequency(parseInt(e));
+                      }}
+                    >
+                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                        <SelectValue placeholder="Frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Frequency.map((frequency, fre) => {
+                          return (
+                            <SelectItem key={fre} value={fre.toString()}>
+                              {frequency.label}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-row divide-x divide-accent">
+                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                    <div className="text-accent">Start Date</div>
+                    <BadgeInfo size={14} />
+                  </div>
+                  <div className="flex flex-row justify-between items-center gap-2 w-full mt-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className={cn(
+                            "w-fit justify-start text-left font-normal flex flex-row items-center border-accent text-white border-0"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 text-white" />
+                          {startDate ? (
+                            format(startDate, "PPP") +
+                            " " +
+                            moment(startTimeValue, "HH:mm:ss").format("hh:mm A")
+                          ) : (
+                            <span className="text-white">Pick start date</span>
+                          )}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <div className="w-full flex flex-row justify-center items-center mt-4">
+                          <input
+                            className="focus:outline-none text-black bg-transparent w-28"
+                            type="time"
+                            value={startTimeValue}
+                            onChange={handleStartTimeChange}
+                          />
+                        </div>
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={handleStartDaySelect}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                    <div className="text-accent">End Date</div>
+                    <BadgeInfo size={14} />
+                  </div>
+                  <div className="flex flex-row justify-between items-center gap-2 w-full mt-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className={cn(
+                            "w-fit justify-start text-left font-normal flex flex-row items-center border-accent text-white border-0"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4 text-white" />
+                          {endDate ? (
+                            format(endDate, "PPP") +
+                            " " +
+                            moment(endTimeValue, "HH:mm:ss").format("hh:mm A")
+                          ) : (
+                            <span className="text-white">Pick end date</span>
+                          )}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <div className="w-full flex flex-row justify-center items-center mt-4">
+                          <input
+                            className="focus:outline-none text-black bg-transparent w-28"
+                            type="time"
+                            value={endTimeValue}
+                            onChange={handleEndTimeChange}
+                          />
+                        </div>
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={handleEndDaySelect}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              className="bg-transparent py-3 w-full bg-white text-black border border-accent hover:bg-transparent hover:text-white text-lg"
+              disabled={isLoading}
+              onClick={async () => {
+                setIsLoading(true);
+                try {
+                  const sessionKeyCall = await buildAddSessionKey(
+                    chainId.toString()
+                  );
+                  const createJobCall = await buildDCAJob(
+                    chainId.toString(),
+                    address,
+                    investValue,
+                    Math.floor(startDate.getTime() / 1000),
+                    Math.floor(endDate.getTime() / 1000),
+                    convertToSeconds(
+                      refreshInterval,
+                      Frequency[frequency].label as any
+                    ),
+                    getChainById(Number(chainId))?.tokens[fromToken].address!,
+                    getChainById(Number(chainId))?.tokens[targetToken].address!,
+                    getChainById(Number(chainId))?.tokens[targetToken].vault ?? ZeroAddress
+                  );
+                  await sendTransaction(
+                    chainId.toString(),
+                    [sessionKeyCall, createJobCall],
+                    validator,
+                    address
+                  );
+                
+                } catch (error) {
+                  console.log(error)
+                  if (
+                    error instanceof WaitForUserOperationReceiptTimeoutError
+                  ) {
+                    const hashPattern = /hash\s"([^"]+)"/;
+                    const match = error.message.match(hashPattern);
+
+                    if (match && match[1]) {
+                      const transactionHash = match[1];
+                      console.log("Transaction hash:", transactionHash);
+                      await waitForExecution(
+                        chainId.toString(),
+                        transactionHash
+                      );
+                    } else {
+                      console.error(
+                        "No transaction hash found in the error message."
+                      );
+                    }
+                    // console.error("User operation timed out:", error.message);
+                  } else {
+                    console.log("Something went bad");
+                  }
+                }
+                try {
+                  const scheduleData = await buildScheduleData(chainId.toString(), nextSessionId)
+                  await scheduleJob({ trigger: { startTime: Math.floor(startDate.getTime() / 1000), endTime: Math.floor(endDate.getTime() / 1000), interval: convertToSeconds(
+                    refreshInterval,
+                    Frequency[frequency].label as any
+                  ) }, data: { call: { to: scheduleData.to, value: Number(scheduleData.value), data: scheduleData.data }, chainId: chainId.toString(), account: address }});
+
+                  setDialogOpen(false);
+                } catch (e) {
+                  console.log("Schedule failed");
+                }
+                setInvestmentAdded(true);
+                setIsLoading(false);
+              }}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating your investement plan...
+                </span>
+              ) : (
+                "Create Plan"
+              )}
+            </button>
+          </DialogContent>
+        </Dialog>
+        </div>
+
+          
+
           <div className="flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
+            
 
         <TabsContent  value="active" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow pt-5">
 
@@ -866,7 +850,9 @@ export default function Investments() {
 {/* </div> */}
 </TabsContent>
 </div>
+
         </Tabs>
+        
       </div>
     </div>
   );

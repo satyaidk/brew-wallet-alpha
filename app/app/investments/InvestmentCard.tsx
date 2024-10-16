@@ -34,7 +34,6 @@ export function InvestmentCard({ investment, jobExecution, chainId, address }: I
   return (
     <div
       className="border border-accent rounded-lg w-full flex flex-col gap-0 border-accent relative h-fit"
-      style={{ backgroundColor: '#0c0c0c' }}
     >
       <div className="flex flex-col-reverse md:flex-row md:justify-between items-center px-4 py-3 border-b border-accent items-end md:items-center gap-2">
         <div className="flex flex-row items-center gap-3 w-full">
