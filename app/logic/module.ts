@@ -202,7 +202,8 @@ export const buildDCAJob = async (chainId: string,  safeAccount: string, amount:
 
   const parsedAmount = parseUnits(amount, await  getTokenDecimals(fromToken, provider))
 
-  const sessionData = { vault: vault, token: fromToken, targetToken: targetToken,  account: safeAccount, validAfter: validAfter, validUntil: validUntil, limitAmount: parsedAmount, refreshInterval: refreshInterval }
+  // NOTE: ValidAfter is 0 because of forked time issue
+  const sessionData = { vault: vault, token: fromToken, targetToken: targetToken,  account: safeAccount, validAfter: 0, validUntil: validUntil, limitAmount: parsedAmount, refreshInterval: refreshInterval }
 
   console.log(sessionData)
   const autoDCA = new Contract(
