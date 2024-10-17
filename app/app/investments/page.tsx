@@ -305,11 +305,10 @@ export default function Investments() {
                   </h5>
                 </div>
                 <div className="grid grid-cols-2 gap-4 w-full">
-                  <div></div>
                   <Dialog>
                     <DialogTrigger
                       onClick={() => setSelectedVault(tokenVault)}
-                      className="border border-accent px-6 py-2.5 bg-white text-black text-sm hover:bg-transparent hover:text-white"
+                      className="border border-accent px-6 py-2.5 bg-black text-white text-sm hover:border-white hover:text-white"
                     >
                       Withdraw
                     </DialogTrigger>
@@ -356,11 +355,6 @@ export default function Investments() {
                                 const provider = await getJsonRpcProvider(
                                   chainId.toString()
                                 );
-                                const redeemBalance = await getRedeemBalance(
-                                  tokenVault.vault,
-                                  address,
-                                  provider
-                                );
                                 const buildVault = await buildVaultRedeem(
                                   chainId.toString(),
                                   address,
@@ -368,27 +362,6 @@ export default function Investments() {
                                 );
  
                                 let calls =  [ buildVault ]
-                                if (chainId != toChain) {
-
-                                  const sendQuote = await getSendQuote(
-                                    tokenVault.address,
-                                    parseInt(
-                                      getChainById(toChain)?.endpointId!
-                                    ),
-                                    address,
-                                    redeemBalance,
-                                    provider
-                                  );
-                                  const buildBridge = await buildTokenBridge(
-                                    chainId.toString(),
-                                    address,
-                                    tokenVault.address,
-                                    sendQuote.sendParam,
-                                    sendQuote.fee
-                                  );
-
-                                  calls.push(buildBridge)
-                                }
 
                                 await sendTransaction(
                                   chainId.toString(),
@@ -396,6 +369,7 @@ export default function Investments() {
                                   validator,
                                   address
                                 );
+                                setInvestmentAdded(true);
 
                               } catch (e) {
                                 console.log("Failed to withdraw", e);
@@ -414,18 +388,11 @@ export default function Investments() {
                           </button>
                         </div>
 
-                        {layerZeroHash && (
+                        {investmentAdded && (
                           <>
                             <span className="flex items-center justify-center">
-                              Transaction sent across chain 🚀
+                              Funds withdrew successfully 🚀✅
                             </span>
-                            <a
-                              className="flex items-center justify-center underline"
-                              target="_blank"
-                              href={`https://layerzeroscan.com/tx/${layerZeroHash}`}
-                            >
-                              Track here ✅
-                            </a>
                           </>
                         )}
                       </DialogHeader>
@@ -462,7 +429,7 @@ export default function Investments() {
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger>
-            <button className="bg-black text-white py-2 px-2 md:px-6 font-medium text-lg flex flex-row justify-center items-center gap-2 border border-black hover:border-accent hover:bg-transparent hover:text-white">
+            <button className="bg-black text-white py-2 px-2 md:px-6 font-medium text-lg flex flex-row justify-center items-center gap-2 border border-accent hover:border-white hover:bg-transparent hover:text-white">
               <PlusSquareIcon />{" "}
               <span className="hidden md:block">Create a Plan</span>
             </button>
@@ -478,14 +445,16 @@ export default function Investments() {
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col border border-accent  divide-y divide-accent gap-px">
-              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div className="flex flex-row justify-start items-center gap-1 text-accent">
+              <div className="flex flex-row divide-x divide-accent">
+                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                  
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
                     <div className="text-accent">Invest</div>
                     <BadgeInfo size={14} />
                   </div>
-                </div>
-                <div className="flex flex-row justify-between items-center gap-2 w-full">
+
+                  <div className="flex flex-row justify-between  gap-2 w-full">
+                    <div className="flex flex-col" >
                   <input
                     type="text"
                     // placeholder={0.01}
@@ -493,7 +462,12 @@ export default function Investments() {
                     className="bg-transparent focus:outline-none w-full text-white text-4xl"
                     onChange={(e) => setInvestValue(e.target.value)}
                   />
-                  <div className="flex flex-row justify-center items-center gap-2">
+                   <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                    <Wallet2 size={16} />
+                    <h5>{Number(balance).toFixed(4)}</h5>
+                    </div>
+                  </div>
+                  <div className="flex flex-row justify-center gap-2">
                     <Select
                       value={fromToken.toString()}
                       onValueChange={(e) => {
@@ -527,24 +501,13 @@ export default function Investments() {
                     </Select>
                   </div>
                 </div>
-
-                <div className="flex flex-row justify-between items-center text-sm">
-                  <div className="text-accent">
-                    ${Number(balance).toFixed(8)}
-                  </div>
-                  <div className="flex flex-row justify-center items-center gap-2 text-accent">
-                    <Wallet2 size={16} />
-                    <h5>{Number(balance).toFixed(8)}</h5>
-                  </div>
                 </div>
-              </div>
-
-              <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                  <div className="text-accent">Buy</div>
-                  <BadgeInfo size={14} />
-                </div>
-                <div className="flex flex-row justify-between items-center gap-2 w-full">
+                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                    <div className="text-accent">Buy</div>
+                    <BadgeInfo size={14} />
+                  </div>
+                  <div className="flex flex-row justify-between items-center gap-2 w-full">
                   <input
                     type="number"
                     disabled
@@ -578,6 +541,7 @@ export default function Investments() {
                         ))}
                       </SelectContent>
                     </Select>
+                </div>
                   </div>
                 </div>
               </div>
@@ -620,6 +584,7 @@ export default function Investments() {
                   </div>
                 </div>
               </div>
+              
               <div className="flex flex-row divide-x divide-accent">
                 <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
                   <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">

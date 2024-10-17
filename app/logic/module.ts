@@ -127,7 +127,6 @@ export const sendTransaction = async (chainId: string, calls: Transaction[], wal
     const smartAccount = await getSmartAccountClient( { chainId, nonceKey: key, address: safeAccount, signUserOperation: walletProvider.signUserOperation, getDummySignature: walletProvider.getDummySignature, 
       validators: (await getModules( walletProvider)).validators, executors: (await getModules( walletProvider)).executors })
 
-      console.log(smartAccount)
     return await smartAccount.sendTransactions({ transactions: calls, account: smartAccount.account!});
 }
 
