@@ -23,6 +23,7 @@ import {
   Loader2,
   PlusSquareIcon,
   Wallet2,
+  TrendingUp
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -64,6 +65,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
 
 type Investment = {
   token: string;
@@ -712,8 +714,11 @@ export default function Investments() {
                     </div>
                   </div>
                   <div className="flex flex-row justify-center items-center gap-2 text-accent">
-                    <Wallet2 size={16} />
-                    <h5>{Number(balance).toFixed(4)}</h5>
+                    <TrendingUp size={16} />
+                    <h5>Earn interest? </h5>
+                    <Switch className="bg-accent rounded-full data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-accent border border-accent"
+                    defaultChecked={getChainById(Number(chainId))?.tokens[targetToken].vault ? true : false}
+                    />
                   </div>
                 </div>
               </div>
