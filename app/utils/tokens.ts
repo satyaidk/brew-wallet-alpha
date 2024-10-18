@@ -216,6 +216,12 @@ const gasChainsTokens: GasChainType[] = [
         icon: "/tokens/cbBTC.png",
         decimals: 8,
       },
+      {
+        name: "cbETH",
+        address: "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
+        icon: "/tokens/cbETH.png",
+        decimals: 18,
+      },
     ],
   },
   {
@@ -243,9 +249,17 @@ const gasChainsTokens: GasChainType[] = [
         icon: "/tokens/cbBTC.png",
         decimals: 8,
       },
+      {
+        name: "cbETH",
+        address: "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
+        icon: "/tokens/cbETH.png",
+        decimals: 18,
+      },
     ],
   },
 ];
+
+
 
 function getChainById(chainId: number) {
   return gasChainsTokens.find((chain) => chain.chainId === chainId);

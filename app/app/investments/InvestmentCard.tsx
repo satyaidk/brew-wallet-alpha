@@ -37,7 +37,7 @@ export function InvestmentCard({
   address,
 }: InvestmentCardProps) {
   return (
-    <div className="border border-accent w-full flex flex-col gap-0 relative h-fit">
+    <div className="border border-accent w-full flex flex-col gap-0 relative h-fit rounded-lg">
       <div className="flex flex-row md:justify-between items-center px-4 py-3 border-b border-accent md:items-center gap-2">
         <div className="flex flex-row items-center gap-3 w-full">
           <div className="flex flex-row justify-start items-center gap-2">
@@ -114,13 +114,13 @@ export function InvestmentCard({
                   width={20}
                   height={20}
                 />
-                <div className="font-semibold">
+                <div >
                   {formatUnits(
                     investment.limitAmount,
                     getTokenInfo(Number(chainId), investment.token)?.decimals
                   )}
                 </div>
-                <div className="font-semibold">
+                <div>
                   {getTokenInfo(Number(chainId), investment.token)?.name}
                 </div>
               </div>
@@ -143,6 +143,11 @@ export function InvestmentCard({
             <div className="flex flex-row justify-between items-center w-full">
               <h4 className="font-semibold">Total Invested</h4>
               <div className="flex flex-row justify-start items-center gap-2">
+            
+                <div>
+                  { jobExecution.totalExecutions > 0 && `( ${formatUnits(investment.limitAmount, getTokenInfo(Number(chainId), investment.token)?.decimals)} x ${jobExecution.totalExecutions} )` }
+                </div>
+
                 <Image
                   src={getTokenInfo(Number(chainId), investment.token)?.icon!}
                   alt="From Token"
@@ -159,6 +164,7 @@ export function InvestmentCard({
                     ),
                     4
                   )}
+                                    
                 </div>
                 <div className="font-semibold">
                   {getTokenInfo(Number(chainId), investment.token)?.name}

@@ -3,12 +3,41 @@ import { Token, CurrencyAmount } from '@uniswap/sdk-core';
 import { Pool, computePoolAddress, FeeAmount } from '@uniswap/v3-sdk';
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 import Quoter from '@uniswap/v3-periphery/artifacts/contracts/lens/Quoter.sol/Quoter.json';
+import QuoterV2 from '@uniswap/v3-periphery/artifacts/contracts/lens/QuoterV2.sol/QuoterV2.json';
+
+
+
 import { getJsonRpcProvider } from '../logic/web3';
 import { getTokenDecimals } from '../logic/utils';
 
-// Uniswap contracts addresses
-const POOL_FACTORY_CONTRACT_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'; // Uniswap V3 Factory
-const QUOTER_CONTRACT_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'; // Uniswap V3 Quoter
+type UniswapContracts = {
+  POOL_FACTORY_CONTRACT_ADDRESS: string;
+  QUOTER_CONTRACT_ADDRESS: string;
+};
+
+// Define the type for the entire UNISWAP_CONTRACTS object
+type UniswapContractsByChainId = {
+  [chainId: number]: UniswapContracts;
+}
+
+const UNISWAP_CONTRACTS: UniswapContractsByChainId = {
+  137: { // Mainnet
+    POOL_FACTORY_CONTRACT_ADDRESS: '0x1F98431c8aD98523631AE4a59f267346ea31F984', // Uniswap V3 Factory
+    QUOTER_CONTRACT_ADDRESS: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e', // Uniswap V3 Quoter
+  },
+  8453 : { // Ropsten (example chain ID)
+    POOL_FACTORY_CONTRACT_ADDRESS: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD', // Uniswap V3 Factory
+    QUOTER_CONTRACT_ADDRESS: '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a', // Uniswap V3 Quoter
+  },
+  1370: { // Mainnet
+    POOL_FACTORY_CONTRACT_ADDRESS: '0x1F98431c8aD98523631AE4a59f267346ea31F984', // Uniswap V3 Factory
+    QUOTER_CONTRACT_ADDRESS: '0x61fFE014bA17989E743c5F6cB21bF9697530B21e', // Uniswap V3 Quoter
+  },
+  84530 : { // Ropsten (example chain ID)
+    POOL_FACTORY_CONTRACT_ADDRESS: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD', // Uniswap V3 Factory
+    QUOTER_CONTRACT_ADDRESS: '0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a', // Uniswap V3 Quoter
+  },
+};
 
 // Helper to get the amount of tokenB for a swap from tokenA
 export async function getQuoteForSwap(
@@ -21,6 +50,7 @@ export async function getQuoteForSwap(
   // Compute pool address
 
   console.log(tokenAAddress, tokenBAddress)
+  const { POOL_FACTORY_CONTRACT_ADDRESS, QUOTER_CONTRACT_ADDRESS } = UNISWAP_CONTRACTS[chainId];
 
   const provider = await getJsonRpcProvider(
     chainId.toString()
@@ -56,19 +86,18 @@ const tokenB = new Token(chainId, tokenBAddress, tokenBDecimals); // Adjust deci
   ]);
 
   // Create a contract reference to the Quoter
-  const quoterContract = new ethers.Contract(QUOTER_CONTRACT_ADDRESS, Quoter.abi, provider);
+  const quoterContract = new ethers.Contract(QUOTER_CONTRACT_ADDRESS, QuoterV2.abi, provider);
 
   // Get the quote (amount out) using quoteExactInputSingle
-  const quotedAmountOut = await quoterContract.quoteExactInputSingle.staticCall(
-    tokenA.address,
-    tokenB.address,
-    fee,
-    ethers.parseUnits(amountIn, tokenA.decimals).toString(),
-    0
-  );
-
-  console.log(quotedAmountOut)
+  const quotedAmountOut = await quoterContract.quoteExactInputSingle.staticCall({
+    tokenIn: tokenA.address,
+    tokenOut:  tokenB.address,
+    amountIn: ethers.parseUnits(amountIn, tokenA.decimals).toString(),
+    fee: fee,
+    sqrtPriceLimitX96: 0 
+  }
+);
 
   // Return the quoted amount out in human-readable format
-  return ethers.formatUnits(quotedAmountOut, tokenB.decimals);
+  return ethers.formatUnits(quotedAmountOut[0], tokenB.decimals);
 }

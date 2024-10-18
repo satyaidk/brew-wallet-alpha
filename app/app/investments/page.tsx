@@ -424,7 +424,9 @@ export default function Investments() {
           defaultValue="active"
           className="w-full flex flex-col gap-4 h-full"
         >
-          <div className="grid grid-cols-3 gap-x-6 items-center">
+
+  
+          <div className="flex flex-col-reverse md:flex-row md:justify-between items-end md:items-center gap-2">
             <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-2 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold">
               <TabsTrigger
                 className="py-3 text-sm rounded-none data-[state=active]:bg-secondary data-[state=active]:text-black data-[state=active]:font-bold"
@@ -444,7 +446,7 @@ export default function Investments() {
           <div className="flex flex-col gap-2 w-full max-h-full h-24 overflow-y-scroll flex-grow">
             <TabsContent
               value="active"
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow mt-0"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow mt-0"
             >
               {investments.filter(
                 (investment) =>
@@ -496,7 +498,7 @@ export default function Investments() {
 
             <TabsContent
               value="history"
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4"
             >
               {investments.length === 0 ? (
                 <div className="col-span-full flex flex-col items-center justify-center text-center p-8">
