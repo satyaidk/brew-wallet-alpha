@@ -71,6 +71,7 @@ import { Switch } from "@/components/ui/switch";
 import { Transaction, zeroAddress } from "viem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvestmentCard } from "./InvestmentCard";
+import { getQuoteForSwap } from "@/app/utils/uniswap";
 
 type Investment = {
   token: string;
@@ -97,10 +98,11 @@ export default function Investments() {
   const [investValue, setInvestValue] = useState<string>("0");
   const [investmentAdded, setInvestmentAdded] = useState(false);
   const [toChain, setToChain] = useState<number>(chainId);
-  const [fromToken, setFromToken] = useState<number>(0);
+  const [fromToken, setFromToken] = useState<number>(1);
   const [balance, setBalance] = useState<string>("0");
   const [layerZeroHash, setLayerZeroHash] = useState<string>("");
-  const [targetToken, setTargetToken] = useState<number>(0);
+  const [targetToken, setTargetToken] = useState<number>(1);
+  const [targetTokenValue, setTargetTokenValue] = useState<string>("");
   const [selectedVault, setSelectedVault] = useState<any>();
   const [frequency, setFrequency] = useState<number>(0);
   const [refreshInterval, setRefreshInterval] = useState<number>(1);
@@ -460,7 +462,15 @@ export default function Investments() {
                     // placeholder={0.01}
                     value={investValue}
                     className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                    onChange={(e) => setInvestValue(e.target.value)}
+                    onChange={async (e) => 
+                    {   
+                    setInvestValue(e.target.value)
+                    const targetValue = await getQuoteForSwap(chainId, getChainById(Number(chainId))?.tokens[fromToken].address!,
+                    getChainById(Number(chainId))?.tokens[targetToken].address!, e.target.value)
+                    setTargetTokenValue(targetValue);
+                    }
+                    
+                    }
                   />
                    <div className="flex flex-row justify-center items-center gap-2 text-accent">
                     <Wallet2 size={16} />
@@ -470,8 +480,11 @@ export default function Investments() {
                   <div className="flex flex-row justify-center gap-2">
                     <Select
                       value={fromToken.toString()}
-                      onValueChange={(e) => {
+                      onValueChange={async (e) => {
                         setFromToken(parseInt(e));
+                        const targetValue = await getQuoteForSwap(chainId, getChainById(Number(chainId))?.tokens[parseInt(e)].address!,
+                        getChainById(Number(chainId))?.tokens[targetToken].address!, investValue)
+                        setTargetTokenValue(targetValue);
                       }}
                     >
                       <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
@@ -481,7 +494,7 @@ export default function Investments() {
                       <SelectContent>
                         {getChainById(Number(chainId))?.tokens.map(
                           (from, f) => (
-                            <SelectItem key={f} value={f.toString()}>
+                            from.address != ZeroAddress && <SelectItem key={f} value={f.toString()}>
                               <div className="flex flex-row justify-center items-center gap-2">
                                 <Image
                                   className="bg-white rounded-full"
@@ -507,18 +520,30 @@ export default function Investments() {
                     <div className="text-accent">Buy</div>
                     <BadgeInfo size={14} />
                   </div>
-                  <div className="flex flex-row justify-between items-center gap-2 w-full">
+                  <div className="flex flex-row justify-between  gap-2 w-full">
+                  <div className="flex flex-col w-full" >
+
                   <input
                     type="number"
                     disabled
-                    placeholder=""
+                    placeholder={targetTokenValue ? fixDecimal(targetTokenValue, 8) : ""}
                     className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                  />
-                  <div className="flex flex-row justify-center items-center gap-2">
+                    />
+                    <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                    <Wallet2 size={16} />
+                    <h5>{Number(balance).toFixed(4)}</h5>
+                    </div>
+                    </div>
+
+                  <div className="flex flex-row justify-center gap-2">
                     <Select
                       value={targetToken.toString()}
-                      onValueChange={(e) => {
+                      onValueChange={async (e) => {
                         setTargetToken(parseInt(e));
+                        const targetValue = await getQuoteForSwap(chainId, getChainById(Number(chainId))?.tokens[fromToken].address!,
+                        getChainById(Number(chainId))?.tokens[parseInt(e)].address!,investValue)
+                        setTargetTokenValue(targetValue);
+
                       }}
                     >
                       <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
@@ -526,7 +551,7 @@ export default function Investments() {
                       </SelectTrigger>
                       <SelectContent>
                         {getChainById(Number(chainId))?.tokens.map((from, f) => (
-                          <SelectItem key={f} value={f.toString()}>
+                          from.address != ZeroAddress && <SelectItem key={f} value={f.toString()}>
                             <div className="flex flex-row justify-center items-center gap-2">
                               <Image
                                 className="bg-white rounded-full"
@@ -678,6 +703,11 @@ export default function Investments() {
               onClick={async () => {
                 setIsLoading(true);
                 try {
+
+                  const provider = await getJsonRpcProvider(
+                    chainId.toString()
+                  );
+           
                   const sessionKeyCall = await buildAddSessionKey(
                     chainId.toString()
                   );
@@ -758,9 +788,8 @@ export default function Investments() {
           
 
           <div className="flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
-            
 
-        <TabsContent  value="active" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow pt-5">
+        <TabsContent  value="active" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow pt-5 mt-0">
 
         {investments.filter(investment => investment.validUntil > Math.floor(Date.now() / 1000)).length > 0 ? (
     investments.filter(investment => investment.validUntil > Math.floor(Date.now() / 1000)).map((investment, index) => {
