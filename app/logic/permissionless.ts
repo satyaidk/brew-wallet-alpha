@@ -44,6 +44,7 @@ import {
 import { EntryPoint, UserOperation } from 'permissionless/types'
 import { publicClient } from './utils'
 import { Erc7739ActionsParameters } from 'viem/experimental'
+import { NetworkUtil } from './networks'
 
 export type SafeSmartAccountClient = SmartAccountClient<
   EntryPoint,
@@ -62,10 +63,8 @@ const erc7579LaunchpadAddress = '0x2E1a6a9802Eb62ec52E862a6373F1E52A4F3f395'
 
 
 const getPimlicoEndpoint = (chainId: string) => {
-  const chain = getChain(chainId);
 
-  // return `https://api.pimlico.io/v2/${chain.name.toLowerCase().replace(/\s+/g, '-')}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`;
-  return 'https://node.zenguard.xyz/bundler/polygon'
+  return NetworkUtil.getNetworkById(parseInt(chainId))?.bundler
 }
 
 export const getPaymasterClient = async (chainId: string) => {

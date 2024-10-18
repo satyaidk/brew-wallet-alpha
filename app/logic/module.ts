@@ -24,8 +24,8 @@ import { ENTRYPOINT_ADDRESS_V07, getPackedUserOperation, UserOperation } from "p
 
 
 const webAuthnModule = "0xD990393C670dCcE8b4d8F858FB98c9912dBFAa06"
-const autoDCAExecutor = "0x588532f232ED5E9e24B48116CA18AEca347E80e2"
-const sessionValidator = "0xa128f9A221c8A0fC13eC23525511ee1448402eBf"
+const autoDCAExecutor = "0xD7945bbAB1A41a1C3736ED5b2411beA809a2ee2b"
+const sessionValidator = "0x8D4Bd3f21CfE07FeDe4320F1DA44F5d5d9b9952C"
 import { getChainId, signMessage } from "viem/actions"
 
 
