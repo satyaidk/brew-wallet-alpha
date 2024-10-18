@@ -261,9 +261,7 @@ export default function Investments() {
         {Boolean(
           tokenVaultDetails.filter((tokenVault) => tokenVault.vaultBalance > 0)
             .length
-        ) && (
-          <h3 className="font-bold text-2xl">Interest bearing investements</h3>
-        )}
+        ) && <h3 className="font-bold text-2xl">Earning Yeild</h3>}
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-white w-full">
           {tokenVaultDetails
@@ -426,16 +424,16 @@ export default function Investments() {
           defaultValue="active"
           className="w-full flex flex-col gap-4 h-full"
         >
-          <div className="flex gap-x-6 items-center">
+          <div className="grid grid-cols-3 gap-x-6 items-center">
             <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-2 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold">
               <TabsTrigger
-                className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
+                className="py-3 text-sm rounded-none data-[state=active]:bg-secondary data-[state=active]:text-black data-[state=active]:font-bold"
                 value="active"
               >
                 Active Plans
               </TabsTrigger>
               <TabsTrigger
-                className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
+                className="py-3 text-sm rounded-none data-[state=active]:bg-secondary data-[state=active]:text-black data-[state=active]:font-bold"
                 value="history"
               >
                 History
@@ -573,148 +571,151 @@ export default function Investments() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col border border-accent  divide-y divide-accent gap-px">
-            <div className="flex flex-row divide-x divide-accent">
-              <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
-                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                  <div className="text-accent">Invest</div>
-                  <BadgeInfo size={14} />
-                </div>
+            <div>
+              <div className="grid grid-cols-2 w-full divide-x divide-accent">
+                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                    <div className="text-accent">Invest</div>
+                    <BadgeInfo size={14} />
+                  </div>
 
-                <div className="flex flex-row justify-between  gap-2 w-full">
-                  <div className="flex flex-col">
-                    <input
-                      type="text"
-                      // placeholder={0.01}
-                      value={investValue}
-                      className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                      onChange={async (e) => {
-                        setInvestValue(e.target.value);
-                        const targetValue = await getQuoteForSwap(
-                          chainId,
-                          getChainById(Number(chainId))?.tokens[fromToken]
-                            .address!,
-                          getChainById(Number(chainId))?.tokens[targetToken]
-                            .address!,
-                          e.target.value
-                        );
-                        setTargetTokenValue(targetValue);
-                      }}
-                    />
-                    <div className="flex flex-row justify-center items-center gap-2 text-accent">
-                      <Wallet2 size={16} />
-                      <h5>{Number(balance).toFixed(4)}</h5>
+                  <div className="grid grid-cols-2 gap-2 w-full">
+                    <div className="flex flex-col">
+                      <input
+                        type="text"
+                        // placeholder={0.01}
+                        value={investValue}
+                        className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                        onChange={async (e) => {
+                          setInvestValue(e.target.value);
+                          const targetValue = await getQuoteForSwap(
+                            chainId,
+                            getChainById(Number(chainId))?.tokens[fromToken]
+                              .address!,
+                            getChainById(Number(chainId))?.tokens[targetToken]
+                              .address!,
+                            e.target.value
+                          );
+                          setTargetTokenValue(targetValue);
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-row justify-center gap-2">
+                      <Select
+                        value={fromToken.toString()}
+                        onValueChange={async (e) => {
+                          setFromToken(parseInt(e));
+                          const targetValue = await getQuoteForSwap(
+                            chainId,
+                            getChainById(Number(chainId))?.tokens[parseInt(e)]
+                              .address!,
+                            getChainById(Number(chainId))?.tokens[targetToken]
+                              .address!,
+                            investValue
+                          );
+                          setTargetTokenValue(targetValue);
+                        }}
+                      >
+                        <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                          <SelectValue placeholder="From Token" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {getChainById(Number(chainId))?.tokens.map(
+                            (from, f) =>
+                              from.address != ZeroAddress && (
+                                <SelectItem key={f} value={f.toString()}>
+                                  <div className="flex flex-row justify-center items-center gap-2">
+                                    <Image
+                                      className="bg-white rounded-full"
+                                      src={from.icon}
+                                      alt={from.name}
+                                      width={25}
+                                      height={25}
+                                    />
+                                    <h3 className="truncate uppercase">
+                                      {from.name}
+                                    </h3>
+                                  </div>
+                                </SelectItem>
+                              )
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                  <div className="flex flex-row justify-center gap-2">
-                    <Select
-                      value={fromToken.toString()}
-                      onValueChange={async (e) => {
-                        setFromToken(parseInt(e));
-                        const targetValue = await getQuoteForSwap(
-                          chainId,
-                          getChainById(Number(chainId))?.tokens[parseInt(e)]
-                            .address!,
-                          getChainById(Number(chainId))?.tokens[targetToken]
-                            .address!,
-                          investValue
-                        );
-                        setTargetTokenValue(targetValue);
-                      }}
-                    >
-                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="From Token" />
-                      </SelectTrigger>
-
-                      <SelectContent>
-                        {getChainById(Number(chainId))?.tokens.map(
-                          (from, f) =>
-                            from.address != ZeroAddress && (
-                              <SelectItem key={f} value={f.toString()}>
-                                <div className="flex flex-row justify-center items-center gap-2">
-                                  <Image
-                                    className="bg-white rounded-full"
-                                    src={from.icon}
-                                    alt={from.name}
-                                    width={25}
-                                    height={25}
-                                  />
-                                  <h3 className="truncate uppercase">
-                                    {from.name}
-                                  </h3>
-                                </div>
-                              </SelectItem>
-                            )
-                        )}
-                      </SelectContent>
-                    </Select>
+                  <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                    <Wallet2 size={16} />
+                    <h5>{Number(balance).toFixed(4)}</h5>
                   </div>
                 </div>
-              </div>
-              <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
-                <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                  <div className="text-accent">Buy</div>
-                  <BadgeInfo size={14} />
-                </div>
-                <div className="flex flex-row justify-between  gap-2 w-full">
-                  <div className="flex flex-col w-full">
-                    <input
-                      type="number"
-                      disabled
-                      placeholder={
-                        targetTokenValue ? fixDecimal(targetTokenValue, 8) : ""
-                      }
-                      className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                    />
-                    <div className="flex flex-row justify-center items-center gap-2 text-accent">
-                      <Wallet2 size={16} />
-                      <h5>{Number(balance).toFixed(4)}</h5>
+                <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                  <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                    <div className="text-accent">Buy</div>
+                    <BadgeInfo size={14} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 w-full">
+                    <div className="flex flex-col w-full">
+                      <input
+                        type="number"
+                        disabled
+                        placeholder={
+                          targetTokenValue
+                            ? fixDecimal(targetTokenValue, 8)
+                            : ""
+                        }
+                        className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                      />
+                    </div>
+
+                    <div className="flex flex-row justify-center gap-2">
+                      <Select
+                        value={targetToken.toString()}
+                        onValueChange={async (e) => {
+                          setTargetToken(parseInt(e));
+                          const targetValue = await getQuoteForSwap(
+                            chainId,
+                            getChainById(Number(chainId))?.tokens[fromToken]
+                              .address!,
+                            getChainById(Number(chainId))?.tokens[parseInt(e)]
+                              .address!,
+                            investValue
+                          );
+                          setTargetTokenValue(targetValue);
+                        }}
+                      >
+                        <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                          <SelectValue placeholder="From Chain" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getChainById(Number(chainId))?.tokens.map(
+                            (from, f) =>
+                              from.address != ZeroAddress && (
+                                <SelectItem key={f} value={f.toString()}>
+                                  <div className="flex flex-row justify-center items-center gap-2">
+                                    <Image
+                                      className="bg-white rounded-full"
+                                      src={from.icon}
+                                      alt={from.name}
+                                      width={25}
+                                      height={25}
+                                    />
+                                    <h3 className="truncate">{from.name}</h3>
+                                  </div>
+                                </SelectItem>
+                              )
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-
-                  <div className="flex flex-row justify-center gap-2">
-                    <Select
-                      value={targetToken.toString()}
-                      onValueChange={async (e) => {
-                        setTargetToken(parseInt(e));
-                        const targetValue = await getQuoteForSwap(
-                          chainId,
-                          getChainById(Number(chainId))?.tokens[fromToken]
-                            .address!,
-                          getChainById(Number(chainId))?.tokens[parseInt(e)]
-                            .address!,
-                          investValue
-                        );
-                        setTargetTokenValue(targetValue);
-                      }}
-                    >
-                      <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="From Chain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getChainById(Number(chainId))?.tokens.map(
-                          (from, f) =>
-                            from.address != ZeroAddress && (
-                              <SelectItem key={f} value={f.toString()}>
-                                <div className="flex flex-row justify-center items-center gap-2">
-                                  <Image
-                                    className="bg-white rounded-full"
-                                    src={from.icon}
-                                    alt={from.name}
-                                    width={25}
-                                    height={25}
-                                  />
-                                  <h3 className="truncate">{from.name}</h3>
-                                </div>
-                              </SelectItem>
-                            )
-                        )}
-                      </SelectContent>
-                    </Select>
+                  <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                    <Wallet2 size={16} />
+                    <h5>{Number(balance).toFixed(4)}</h5>
                   </div>
                 </div>
               </div>
             </div>
-
             <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
               <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
                 <div className="text-accent">Every</div>
@@ -840,7 +841,7 @@ export default function Investments() {
             </div>
           </div>
           <button
-            className="bg-transparent py-3 w-full bg-white text-black border border-accent hover:bg-transparent hover:text-white text-lg"
+            className="bg-transparent py-3 w-full bg-gradient text-white font-semibold border border-accent hover:bg-transparent hover:text-white text-lg"
             disabled={isLoading}
             onClick={async () => {
               setIsLoading(true);

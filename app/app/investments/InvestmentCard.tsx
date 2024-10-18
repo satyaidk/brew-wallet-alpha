@@ -70,7 +70,7 @@ export function InvestmentCard({
         </div>
 
         <Switch
-          className="bg-accent rounded-full data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-accent border border-accent"
+          className="bg-accent rounded-full data-[state=checked]:bg-secondary data-[state=unchecked]:bg-accent border border-accent"
           onCheckedChange={async (checked) => {
             if (!checked) {
               const jobId = createJobId(
