@@ -53,7 +53,7 @@ export default function Home() {
             Login or Signup with your passkey
           </h2>
         )}
-        <div className="flex flex-col gap-2 items-center justify-center w-full border border-accent rounded-md bg-black p-4">
+        <div className="flex flex-col gap-2 items-center justify-center w-full border border-accent rounded-md bg-black p-4 z-50">
           {walletInfo ? (
             <div className="grid grid-cols-5 gap-2 items-center justify-between px-6 bg-white text-black w-full py-2.5">
               <div></div>

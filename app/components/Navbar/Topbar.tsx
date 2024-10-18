@@ -22,7 +22,13 @@ import { MenuIcon } from "lucide-react";
 import Links from "../../data/Links.json";
 import Icons from "@/app/utils/Icons";
 import { FadeText } from "@/components/magicui/fade-text";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { gasChainsTokens } from "@/app/utils/tokens";
 import useAccountStore from "@/app/store/account/account.store";
 
@@ -121,32 +127,32 @@ export default function Topbar() {
         />
 
         <div className="flex flex-row justify-end items-center gap-4 w-full">
-        <Select
-                      value={chainId.toString()}
-                      onValueChange={(e) => {
-                        setChainId(parseInt(e));
-                      }}
-                    >
-                      <SelectTrigger className=" w-28 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                        <SelectValue placeholder="From Chain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gasChainsTokens.map((from, f) => (
-                          <SelectItem key={f} value={from.chainId.toString()}>
-                            <div className="flex flex-row justify-center items-center gap-2">
-                              <Image
-                                className="bg-white rounded-full"
-                                src={from.icon}
-                                alt={from.name}
-                                width={25}
-                                height={25}
-                              />
-                              <h3 className="truncate">{from.name}</h3>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+          <Select
+            value={chainId.toString()}
+            onValueChange={(e) => {
+              setChainId(parseInt(e));
+            }}
+          >
+            <SelectTrigger className=" w-32 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+              <SelectValue placeholder="From Chain" />
+            </SelectTrigger>
+            <SelectContent>
+              {gasChainsTokens.map((from, f) => (
+                <SelectItem key={f} value={from.chainId.toString()}>
+                  <div className="flex flex-row justify-center items-center gap-2">
+                    <Image
+                      className="bg-white rounded-full"
+                      src={from.icon}
+                      alt={from.name}
+                      width={25}
+                      height={25}
+                    />
+                    <h3 className="truncate">{from.name}</h3>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <WalletButton
             walletInfo={walletInfo}
             address={address}
