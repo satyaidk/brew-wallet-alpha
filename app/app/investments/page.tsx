@@ -71,6 +71,7 @@ import { Switch } from "@/components/ui/switch";
 import { Transaction, zeroAddress } from "viem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InvestmentCard } from "./InvestmentCard";
+import { getQuoteForSwap } from "@/app/utils/uniswap";
 
 type Investment = {
   token: string;
@@ -97,10 +98,11 @@ export default function Investments() {
   const [investValue, setInvestValue] = useState<string>("0");
   const [investmentAdded, setInvestmentAdded] = useState(false);
   const [toChain, setToChain] = useState<number>(chainId);
-  const [fromToken, setFromToken] = useState<number>(0);
+  const [fromToken, setFromToken] = useState<number>(1);
   const [balance, setBalance] = useState<string>("0");
   const [layerZeroHash, setLayerZeroHash] = useState<string>("");
-  const [targetToken, setTargetToken] = useState<number>(0);
+  const [targetToken, setTargetToken] = useState<number>(1);
+  const [targetTokenValue, setTargetTokenValue] = useState<string>("");
   const [selectedVault, setSelectedVault] = useState<any>();
   const [frequency, setFrequency] = useState<number>(0);
   const [refreshInterval, setRefreshInterval] = useState<number>(1);
@@ -262,7 +264,7 @@ export default function Investments() {
   };
 
   return (
-    <div className="flex flex-col gap-0 justify-start p-4 items-start border border-accent w-full h-full">
+    <div className="flex flex-col gap-6 justify-start p-4 items-start border border-accent w-full h-full">
       {Boolean(
         tokenVaultDetails.filter((tokenVault) => tokenVault.vaultBalance > 0)
           .length
@@ -278,7 +280,7 @@ export default function Investments() {
           .map((tokenVault, index) => (
             <div
               key={index}
-              className="border-accent rounded-lg  w-full flex flex-col gap-0 border"
+              className="border-accent rounded-lg  w-full flex flex-col gap-0 border border-accent"
             >
               <div className="flex flex-row justify-between items-center px-4 py-3 border-b border-accent">
                 <div className="flex flex-row justify-start items-center gap-2">
@@ -312,11 +314,10 @@ export default function Investments() {
                     </h5>
                   </div>
                   <div className="grid grid-cols-2 gap-4 w-full">
-                    <div></div>
                     <Dialog>
                       <DialogTrigger
                         onClick={() => setSelectedVault(tokenVault)}
-                        className="border border-accent px-6 py-2.5 bg-white text-black text-sm hover:bg-transparent hover:text-white"
+                        className="border border-accent px-6 py-2.5 bg-black text-white text-sm hover:border-white hover:text-white"
                       >
                         Withdraw
                       </DialogTrigger>
@@ -376,11 +377,6 @@ export default function Investments() {
                                   const provider = await getJsonRpcProvider(
                                     chainId.toString()
                                   );
-                                  const redeemBalance = await getRedeemBalance(
-                                    tokenVault.vault,
-                                    address,
-                                    provider
-                                  );
                                   const buildVault = await buildVaultRedeem(
                                     chainId.toString(),
                                     address,
@@ -388,26 +384,6 @@ export default function Investments() {
                                   );
 
                                   let calls = [buildVault];
-                                  if (chainId != toChain) {
-                                    const sendQuote = await getSendQuote(
-                                      tokenVault.address,
-                                      parseInt(
-                                        getChainById(toChain)?.endpointId!
-                                      ),
-                                      address,
-                                      redeemBalance,
-                                      provider
-                                    );
-                                    const buildBridge = await buildTokenBridge(
-                                      chainId.toString(),
-                                      address,
-                                      tokenVault.address,
-                                      sendQuote.sendParam,
-                                      sendQuote.fee
-                                    );
-
-                                    calls.push(buildBridge);
-                                  }
 
                                   await sendTransaction(
                                     chainId.toString(),
@@ -415,6 +391,7 @@ export default function Investments() {
                                     validator,
                                     address
                                   );
+                                  setInvestmentAdded(true);
                                 } catch (e) {
                                   console.log("Failed to withdraw", e);
                                 }
@@ -432,18 +409,11 @@ export default function Investments() {
                             </button>
                           </div>
 
-                          {layerZeroHash && (
+                          {investmentAdded && (
                             <>
                               <span className="flex items-center justify-center">
-                                Transaction sent across chain 🚀
+                                Funds withdrew successfully 🚀✅
                               </span>
-                              <a
-                                className="flex items-center justify-center underline"
-                                target="_blank"
-                                href={`https://layerzeroscan.com/tx/${layerZeroHash}`}
-                              >
-                                Track here ✅
-                              </a>
                             </>
                           )}
                         </DialogHeader>
@@ -462,7 +432,7 @@ export default function Investments() {
           defaultValue="active"
           className="w-full flex flex-col gap-4 h-full"
         >
-          <div className="flex flex-row justify-between items-center gap-x-6 items-center">
+          <div className="flex gap-x-6 items-center">
             <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-2 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold">
               <TabsTrigger
                 className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
@@ -480,7 +450,7 @@ export default function Investments() {
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger>
-                <button className="bg-gradient border border-accent bg-black text-white py-2 px-2 md:px-6 font-medium text-lg flex flex-row justify-center items-center gap-2 hover:border-accent hover:bg-transparent hover:text-white">
+                <button className="bg-black text-white py-2 px-2 md:px-6 font-medium text-lg flex flex-row justify-center items-center gap-2 border border-accent hover:border-white hover:bg-transparent hover:text-white">
                   <PlusSquareIcon />{" "}
                   <span className="hidden md:block">Create a Plan</span>
                 </button>
@@ -496,108 +466,152 @@ export default function Investments() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col border border-accent  divide-y divide-accent gap-px">
-                  <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                    <div className="flex flex-row justify-between items-center text-sm">
-                      <div className="flex flex-row justify-start items-center gap-1 text-accent">
+                  <div className="flex flex-row divide-x divide-accent">
+                    <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                      <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
                         <div className="text-accent">Invest</div>
                         <BadgeInfo size={14} />
                       </div>
-                    </div>
-                    <div className="flex flex-row justify-between items-center gap-2 w-full">
-                      <input
-                        type="text"
-                        // placeholder={0.01}
-                        value={investValue}
-                        className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                        onChange={(e) => setInvestValue(e.target.value)}
-                      />
-                      <div className="flex flex-row justify-center items-center gap-2">
-                        <Select
-                          value={fromToken.toString()}
-                          onValueChange={(e) => {
-                            setFromToken(parseInt(e));
-                          }}
-                        >
-                          <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                            <SelectValue placeholder="From Token" />
-                          </SelectTrigger>
 
-                          <SelectContent>
-                            {getChainById(Number(chainId))?.tokens.map(
-                              (from, f) => (
-                                <SelectItem key={f} value={f.toString()}>
-                                  <div className="flex flex-row justify-center items-center gap-2">
-                                    <Image
-                                      className="bg-white rounded-full"
-                                      src={from.icon}
-                                      alt={from.name}
-                                      width={25}
-                                      height={25}
-                                    />
-                                    <h3 className="truncate uppercase">
-                                      {from.name}
-                                    </h3>
-                                  </div>
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
+                      <div className="flex flex-row justify-between  gap-2 w-full">
+                        <div className="flex flex-col">
+                          <input
+                            type="text"
+                            // placeholder={0.01}
+                            value={investValue}
+                            className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                            onChange={async (e) => {
+                              setInvestValue(e.target.value);
+                              const targetValue = await getQuoteForSwap(
+                                chainId,
+                                getChainById(Number(chainId))?.tokens[fromToken]
+                                  .address!,
+                                getChainById(Number(chainId))?.tokens[
+                                  targetToken
+                                ].address!,
+                                e.target.value
+                              );
+                              setTargetTokenValue(targetValue);
+                            }}
+                          />
+                          <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                            <Wallet2 size={16} />
+                            <h5>{Number(balance).toFixed(4)}</h5>
+                          </div>
+                        </div>
+                        <div className="flex flex-row justify-center gap-2">
+                          <Select
+                            value={fromToken.toString()}
+                            onValueChange={async (e) => {
+                              setFromToken(parseInt(e));
+                              const targetValue = await getQuoteForSwap(
+                                chainId,
+                                getChainById(Number(chainId))?.tokens[
+                                  parseInt(e)
+                                ].address!,
+                                getChainById(Number(chainId))?.tokens[
+                                  targetToken
+                                ].address!,
+                                investValue
+                              );
+                              setTargetTokenValue(targetValue);
+                            }}
+                          >
+                            <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                              <SelectValue placeholder="From Token" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {getChainById(Number(chainId))?.tokens.map(
+                                (from, f) =>
+                                  from.address != ZeroAddress && (
+                                    <SelectItem key={f} value={f.toString()}>
+                                      <div className="flex flex-row justify-center items-center gap-2">
+                                        <Image
+                                          className="bg-white rounded-full"
+                                          src={from.icon}
+                                          alt={from.name}
+                                          width={25}
+                                          height={25}
+                                        />
+                                        <h3 className="truncate uppercase">
+                                          {from.name}
+                                        </h3>
+                                      </div>
+                                    </SelectItem>
+                                  )
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="flex flex-row justify-between items-center text-sm">
-                      <div className="text-accent">
-                        ${Number(balance).toFixed(8)}
+                    <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
+                      <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
+                        <div className="text-accent">Buy</div>
+                        <BadgeInfo size={14} />
                       </div>
-                      <div className="flex flex-row justify-center items-center gap-2 text-accent">
-                        <Wallet2 size={16} />
-                        <h5>{Number(balance).toFixed(8)}</h5>
-                      </div>
-                    </div>
-                  </div>
+                      <div className="flex flex-row justify-between  gap-2 w-full">
+                        <div className="flex flex-col w-full">
+                          <input
+                            type="number"
+                            disabled
+                            placeholder={
+                              targetTokenValue
+                                ? fixDecimal(targetTokenValue, 8)
+                                : ""
+                            }
+                            className="bg-transparent focus:outline-none w-full text-white text-4xl"
+                          />
+                          <div className="flex flex-row justify-center items-center gap-2 text-accent">
+                            <Wallet2 size={16} />
+                            <h5>{Number(balance).toFixed(4)}</h5>
+                          </div>
+                        </div>
 
-                  <div className=" px-4 py-3 flex flex-col gap-2 w-full text-base">
-                    <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
-                      <div className="text-accent">Buy</div>
-                      <BadgeInfo size={14} />
-                    </div>
-                    <div className="flex flex-row justify-between items-center gap-2 w-full">
-                      <input
-                        type="number"
-                        disabled
-                        placeholder=""
-                        className="bg-transparent focus:outline-none w-full text-white text-4xl"
-                      />
-                      <div className="flex flex-row justify-center items-center gap-2">
-                        <Select
-                          value={targetToken.toString()}
-                          onValueChange={(e) => {
-                            setTargetToken(parseInt(e));
-                          }}
-                        >
-                          <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
-                            <SelectValue placeholder="From Chain" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getChainById(Number(chainId))?.tokens.map(
-                              (from, f) => (
-                                <SelectItem key={f} value={f.toString()}>
-                                  <div className="flex flex-row justify-center items-center gap-2">
-                                    <Image
-                                      className="bg-white rounded-full"
-                                      src={from.icon}
-                                      alt={from.name}
-                                      width={25}
-                                      height={25}
-                                    />
-                                    <h3 className="truncate">{from.name}</h3>
-                                  </div>
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex flex-row justify-center gap-2">
+                          <Select
+                            value={targetToken.toString()}
+                            onValueChange={async (e) => {
+                              setTargetToken(parseInt(e));
+                              const targetValue = await getQuoteForSwap(
+                                chainId,
+                                getChainById(Number(chainId))?.tokens[fromToken]
+                                  .address!,
+                                getChainById(Number(chainId))?.tokens[
+                                  parseInt(e)
+                                ].address!,
+                                investValue
+                              );
+                              setTargetTokenValue(targetValue);
+                            }}
+                          >
+                            <SelectTrigger className=" w-24 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                              <SelectValue placeholder="From Chain" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {getChainById(Number(chainId))?.tokens.map(
+                                (from, f) =>
+                                  from.address != ZeroAddress && (
+                                    <SelectItem key={f} value={f.toString()}>
+                                      <div className="flex flex-row justify-center items-center gap-2">
+                                        <Image
+                                          className="bg-white rounded-full"
+                                          src={from.icon}
+                                          alt={from.name}
+                                          width={25}
+                                          height={25}
+                                        />
+                                        <h3 className="truncate">
+                                          {from.name}
+                                        </h3>
+                                      </div>
+                                    </SelectItem>
+                                  )
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -640,6 +654,7 @@ export default function Investments() {
                       </div>
                     </div>
                   </div>
+
                   <div className="flex flex-row divide-x divide-accent">
                     <div className=" px-4 py-3 flex flex-col justify-start items-start gap-2 w-full text-base">
                       <div className="flex flex-row justify-start items-center gap-1 text-accent text-sm">
@@ -741,6 +756,10 @@ export default function Investments() {
                   onClick={async () => {
                     setIsLoading(true);
                     try {
+                      const provider = await getJsonRpcProvider(
+                        chainId.toString()
+                      );
+
                       const sessionKeyCall = await buildAddSessionKey(
                         chainId.toString()
                       );
@@ -838,83 +857,36 @@ export default function Investments() {
             </Dialog>
           </div>
 
-          <div className="flex flex-col gap-2 w-full max-h-full  px-4 pb-4 overflow-y-scroll flex-grow">
-            <TabsContent value="active" className="h-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8 text-white w-full h-full max-h-full overflow-y-scroll flex-grow">
-                {investments.filter(
-                  (investment) =>
-                    investment.validUntil > Math.floor(Date.now() / 1000)
-                ).length > 0 ? (
-                  investments
-                    .filter(
-                      (investment) =>
-                        investment.validUntil > Math.floor(Date.now() / 1000)
-                    )
-                    .map((investment, index) => {
-                      const originalIndex = investments.findIndex(
-                        (inv) => inv === investment
-                      );
-                      return (
-                        <InvestmentCard
-                          key={index}
-                          investment={investment}
-                          jobExecution={jobExecutions[originalIndex]}
-                          chainId={chainId}
-                          address={address}
-                        />
-                      );
-                    })
-                ) : (
-                  <div className="col-span-full flex flex-col items-center justify-center text-center p-8">
-                    <Image
-                      src="/icons/empty.png"
-                      alt="No active investments"
-                      width={75}
-                      height={75}
-                      className="mb-6"
-                    />
-                    <h3 className="text-2xl font-bold mb-2">
-                      No Active Investment Plans
-                    </h3>
-                    <p className="text-accent mb-4">
-                      You do not have any active investment plans at the moment.
-                    </p>
-                    <button
-                      onClick={() => setDialogOpen(true)}
-                      className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white border border-accent text-lg mt-4"
-                    >
-                      Create Your Plan
-                    </button>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="history" className="h-full">
-              {investments.length !== 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8 h-full">
-                  {investments
-                    .filter(
-                      (investment) =>
-                        investment.validUntil < Math.floor(Date.now() / 1000)
-                    )
-                    .map((investment, index) => {
-                      const originalIndex = investments.findIndex(
-                        (inv) => inv === investment
-                      );
-                      return (
-                        <InvestmentCard
-                          key={index}
-                          investment={investment}
-                          jobExecution={jobExecutions[originalIndex]}
-                          chainId={chainId}
-                          address={address}
-                        />
-                      );
-                    })}
-                </div>
+          <div className="flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
+            <TabsContent
+              value="active"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow pt-5 mt-0"
+            >
+              {investments.filter(
+                (investment) =>
+                  investment.validUntil > Math.floor(Date.now() / 1000)
+              ).length > 0 ? (
+                investments
+                  .filter(
+                    (investment) =>
+                      investment.validUntil > Math.floor(Date.now() / 1000)
+                  )
+                  .map((investment, index) => {
+                    const originalIndex = investments.findIndex(
+                      (inv) => inv === investment
+                    );
+                    return (
+                      <InvestmentCard
+                        key={index}
+                        investment={investment}
+                        jobExecution={jobExecutions[originalIndex]}
+                        chainId={chainId}
+                        address={address}
+                      />
+                    );
+                  })
               ) : (
-                <div className="col-span-full flex flex-col items-center justify-center text-center p-8 h-full">
+                <div className="col-span-full flex flex-col items-center justify-center text-center p-8">
                   <Image
                     src="/icons/empty.png"
                     alt="No active investments"
@@ -930,12 +902,38 @@ export default function Investments() {
                   </p>
                   <button
                     onClick={() => setDialogOpen(true)}
-                    className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white border border-accent text-lg mt-4"
+                    className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white"
                   >
                     Create Your Plan
                   </button>
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent
+              value="history"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-x-12 gap-y-8"
+            >
+              {investments
+                .filter(
+                  (investment) =>
+                    investment.validUntil < Math.floor(Date.now() / 1000)
+                )
+                .map((investment, index) => {
+                  const originalIndex = investments.findIndex(
+                    (inv) => inv === investment
+                  );
+                  return (
+                    <InvestmentCard
+                      key={index}
+                      investment={investment}
+                      jobExecution={jobExecutions[originalIndex]}
+                      chainId={chainId}
+                      address={address}
+                    />
+                  );
+                })}
+              {/* </div> */}
             </TabsContent>
           </div>
         </Tabs>

@@ -103,7 +103,7 @@ const gasChainsTokens: GasChainType[] = [
     endpointId: "40137",
     tokens: [
       {
-        name: "Matic",
+        name: "POL",
         address: "0x0000000000000000000000000000000000000000",
         icon: "/tokens/polygon.png",
         decimals: 18,
@@ -151,7 +151,7 @@ const gasChainsTokens: GasChainType[] = [
     endpointId: "40137",
     tokens: [
       {
-        name: "Matic",
+        name: "POL",
         address: "0x0000000000000000000000000000000000000000",
         icon: "/tokens/polygon.png",
         decimals: 18,
