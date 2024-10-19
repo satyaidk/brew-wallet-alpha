@@ -43,11 +43,15 @@ import { getJsonRpcProvider } from "../logic/web3";
 import { getChainById } from "../utils/tokens";
 import { fixDecimal, getTokenBalance, getVaultBalance } from "../logic/utils";
 import { formatEther, ZeroAddress } from "ethers";
+import { useRouter } from "next/navigation";
 
 export default function App() {
 
   const { chainId, setChainId } = useAccountStore();
+  const router = useRouter();
   const [ tokenDetails, setTokenDetails ]: any = useState([]);
+  const [ tokenVaultDetails, setTokenVaultDetails ]: any = useState([]);
+
   const { toast } = useToast();
   const [openShowQR, setOpenShowQR] = useState(false);
   const { address } = useAccount();
@@ -115,15 +119,12 @@ export default function App() {
               };
             })
         );
-
         console.log(updatedTokens)
-
-
-        // setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
+        setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
         }
       
     })();
-  }, [chainId, address, ]);
+  }, [chainId, address ]);
 
 
   function addAllNetworks() {
@@ -435,7 +436,7 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <SendHorizonal size={25} />
+                            <SendHorizonal size={25} onClick={()=> router.push('/app/send')}/>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Send</p>
@@ -446,7 +447,7 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <RefreshCcw size={25} />
+                            <RefreshCcw size={25} onClick={()=> router.push('/app/swap')}/>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Swap</p>
@@ -457,7 +458,7 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <PiggyBank size={25} />
+                            <PiggyBank size={25} onClick={()=> router.push('/app/investments')} />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Investments</p>
@@ -475,7 +476,7 @@ export default function App() {
             className="p-0 mt-0 flex flex-col-reverse md:grid md:grid-cols-3 justify-between items-start gap-4"
           >
             <div className="flex flex-col col-span-2">
-              {DefiData.length === 0 && (
+              {tokenVaultDetails.length === 0 && (
                 <div className="flex flex-col justify-center items-center gap-2 py-4 md:h-[55vh] text-3xl">
                   <div className="flex flex-col gap-4 justify-center items-center font-bold">
                     <h2>
@@ -491,28 +492,28 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {DefiData.length > 0 &&
-                DefiData?.map((defi, t) => {
+              {tokenVaultDetails.length > 0 &&
+                tokenVaultDetails?.map((vault: any) => {
                   return (
                     <div
-                      key={t}
+                      // key={t}
                       className="flex flex-row justify-between items-center gap-4 gap-y-4 md:gap-8 py-3.5 border-b border-accent first:pt-1"
                     >
                       <div className="flex flex-row justify-start items-center gap-3">
                         <div className="bg-black rounded-full p-1 relative">
                           <img
                             className="rounded-full bg-white"
-                            src={defi.appImage || "/defi/default.png"}
+                            src={vault.icon || "/defi/default.png"}
                             width={30}
                             height={30}
-                            alt={defi.appName}
+                            alt={vault.name}
                           />
                         </div>
                         <div className="flex flex-row justify-start items-center gap-3 w-full">
                           <div className="font-semibold truncate">
-                            {defi.appName}
+                            {vault.fullname} Vault
                           </div>
-                          <div className="flex flex-row flex-wrap gap-2 justify-start items-center text-xs">
+                          {/* <div className="flex flex-row flex-wrap gap-2 justify-start items-center text-xs">
                             {defi.products.slice(0, 2).map((product, p) => {
                               return (
                                 <div
@@ -523,11 +524,11 @@ export default function App() {
                                 </div>
                               );
                             })}
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                       <div className=" text-right">
-                        ${defi.balanceUSD.toFixed(2)}
+                        {fixDecimal(vault.vaultBalance, 4)}
                       </div>
                     </div>
                   );
