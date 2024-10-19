@@ -4,8 +4,8 @@
         "href": "/app"
     },
     {
-        "name": "Transfer",
-        "href": "/app/transfer"
+        "name": "Send",
+        "href": "/app/send"
     },
     {
         "name": "Swap",

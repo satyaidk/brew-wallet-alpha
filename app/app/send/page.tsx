@@ -87,7 +87,7 @@ export default function Bridge() {
     <div className="w-full h-full text-white border border-accent flex flex-col justify-start md:justify-center items-start md:items-center gap-6 px-4 py-4 md:py-6">
       <div className="bg-transparent border border-accent max-w-lg w-full flex flex-col">
         <div className="flex flex-row justify-between items-center gap-2 py-3.5 border-b border-accent px-4 md:px-6">
-          <h2 className="font-bold text-xl truncate">Transfer Tokens</h2>
+          <h2 className="font-bold text-xl truncate">Send Asset</h2>
         </div>
         <div className="flex flex-col gap-4 px-4 md:px-6 pb-6 pt-7 relative">
           <div className="flex flex-col gap-2">
@@ -100,19 +100,18 @@ export default function Bridge() {
             <div className="grid grid-cols-2 md:grid-cols-3">
               <div className="flex flex-row col-span-2 divide-x divide-accent border-r border-accent">
                 <Select
-                  value={selectedTransferChainID.toString()}
+                  value={chainId.toString()}
                   onValueChange={(e) => {
-                    setChainId(gasChainsTokens[parseInt(e)].chainId)
+                    setChainId(parseInt(e))
                     setSelectedTokenID(0);
-                    setSelectedTransferChainID(parseInt(e));
                   }}
                 >
                   <SelectTrigger className="bg-black text-white px-4 w-full py-3 h-full border-r-0 border-accent focus:outline-none focus:ring-offset-0 focus:ring-0">
                     <SelectValue placeholder="Chain" />
                   </SelectTrigger>
                   <SelectContent>
-                    {gasChainsTokens.map((chain, c) => (
-                      <SelectItem key={chain.chainId} value={c.toString()}>
+                    {gasChainsTokens.map((chain) => (
+                      <SelectItem key={chain.chainId} value={chain.chainId.toString()}>
                         <div className="flex flex-row justify-center items-center gap-2 w-auto">
                           <Image
                             className="bg-white rounded-full"
@@ -128,7 +127,7 @@ export default function Bridge() {
                   </SelectContent>
                 </Select>
                 <Select
-                  key={selectedTransferChainID}
+                  key={chainId}
                   value={selectedTokenID.toString()}
                   onValueChange={(e) => setSelectedTokenID(parseInt(e))}
                 >
@@ -136,7 +135,7 @@ export default function Bridge() {
                     <SelectValue placeholder="Token" />
                   </SelectTrigger>
                   <SelectContent>
-                    {gasChainsTokens[selectedTransferChainID].tokens.map(
+                    {getChainById(chainId)?.tokens.map(
                       (stoken, t) => (
                         <SelectItem key={t} value={t.toString()}>
                           <div className="flex flex-row justify-center items-center gap-2 w-auto">
@@ -178,24 +177,24 @@ export default function Bridge() {
               <h4>Network</h4>
               <h5 className="flex flex-row justify-center items-center gap-1.5">
                 <Image
-                  src={gasChainsTokens[selectedTransferChainID]?.icon}
-                  alt={gasChainsTokens[selectedTransferChainID]?.name}
+                  src={getChainById(Number(chainId))?.icon!}
+                  alt={getChainById(Number(chainId))?.name!}
                   width={"20"}
                   height={"20"}
                 />
-                {gasChainsTokens[selectedTransferChainID]?.name}
+                {getChainById(chainId)?.name}
               </h5>
             </div>
             <div className="flex flex-row justify-between items-center py-2">
               <h4>Token</h4>
               <h5 className="flex flex-row justify-center items-center gap-1.5">
               <Image
-                  src={gasChainsTokens[selectedTransferChainID]?.tokens[selectedTokenID]?.icon}
-                  alt={gasChainsTokens[selectedTransferChainID]?.tokens[selectedTokenID]?.name}
+                  src={getChainById(Number(chainId))!.tokens[selectedTokenID]?.icon}
+                  alt={getChainById(Number(chainId))!.tokens[selectedTokenID]?.name}
                   width={"20"}
                   height={"20"}
                 />
-              {gasChainsTokens[selectedTransferChainID]?.tokens[selectedTokenID]?.name}</h5>
+              {getChainById(chainId)?.tokens[selectedTokenID]?.name}</h5>
             </div>
             <div className="flex flex-row justify-between items-center pt-2">
               <h4>Recipient Address</h4>
@@ -209,7 +208,7 @@ export default function Bridge() {
           
           }}
           >
-            Transfer <SendHorizonal size={20} />
+            Send <SendHorizonal size={20} />
           </button>
         </div>
       </div>

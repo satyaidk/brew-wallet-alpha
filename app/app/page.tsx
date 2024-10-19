@@ -38,8 +38,16 @@ import {
 } from "../utils/Zapper";
 import { set } from "date-fns";
 import NumberTicker from "@/components/magicui/number-ticker";
+import useAccountStore from "../store/account/account.store";
+import { getJsonRpcProvider } from "../logic/web3";
+import { getChainById } from "../utils/tokens";
+import { fixDecimal, getTokenBalance, getVaultBalance } from "../logic/utils";
+import { formatEther, ZeroAddress } from "ethers";
 
 export default function App() {
+
+  const { chainId, setChainId } = useAccountStore();
+  const [ tokenDetails, setTokenDetails ]: any = useState([]);
   const { toast } = useToast();
   const [openShowQR, setOpenShowQR] = useState(false);
   const { address } = useAccount();
@@ -68,6 +76,55 @@ export default function App() {
     addAllNetworks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    (async () => {
+        const provider = await getJsonRpcProvider(chainId.toString());
+        let tokens = getChainById(Number(chainId))?.tokens
+
+        let updatedTokens = [];
+
+
+        updatedTokens = await Promise.all(
+          tokens!.map(async (token) => {
+            const balance = token.address == ZeroAddress ? formatEther(await provider.getBalance(address)) : await getTokenBalance(token.address!, address, provider);
+
+            return {
+              ...token,
+              balance, // Add the balance to each token
+            };
+          }))
+
+        setTokenDetails(updatedTokens)
+
+        let tokensWithVault = updatedTokens?.filter(
+          (token: any) => token.vault != undefined
+        );
+
+        if (tokensWithVault) {
+          updatedTokens = await Promise.all(
+            tokensWithVault.map(async (token) => {
+              const vaultBalance = await getVaultBalance(
+                token.vault!,
+                address,
+                provider
+              );
+              return {
+                ...token,
+                vaultBalance, // Add the vault balance to each token
+              };
+            })
+        );
+
+        console.log(updatedTokens)
+
+
+        // setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
+        }
+      
+    })();
+  }, [chainId, address, ]);
+
 
   function addAllNetworks() {
     setSelectedNetworks((prevSelectedNetworks) => {
@@ -290,7 +347,7 @@ export default function App() {
         <div className="border border-accent flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
           <TabsContent value="Tokens" className="p-0 mt-0 flex flex-col gap-4">
             <div className="flex flex-col">
-              {tokensByNetwork.length === 0 && (
+              { tokenDetails.length === 0 && (
                 <div className="flex flex-col justify-center items-center gap-2 py-4 md:h-[55vh] text-3xl">
                   <div className="flex flex-col gap-4 justify-center items-center font-bold">
                     <h2>
@@ -325,10 +382,10 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {tokensByNetwork?.map((token, t) => {
+              {tokenDetails?.map((token: any) => {
                 return (
                   <div
-                    key={t}
+                    // key={t}
                     className="grid grid-cols-2 md:grid-cols-9 gap-4 md:gap-8 py-5 md:py-3.5 items-center border-b border-accent"
                   >
                     <div className="flex flex-row justify-start items-center gap-3 md:col-span-3">
@@ -336,42 +393,42 @@ export default function App() {
                         <img
                           className="rounded-full bg-white"
                           src={
-                            getIconbySymbol(token.token.symbol) ||
+                            token.icon ||
                             "/tokens/default.png"
                           }
                           width={30}
                           height={30}
-                          alt={token.token.name}
+                          alt={token.name}
                         />
                         <div className="absolute right-0 top-0 text-white text-sm">
                           <Image
                             className="rounded-full bg-white p-px shadow-md"
-                            src={getNetworkLogobyName(token.token.network)}
+                            src={getChainById(Number(chainId))?.icon!}
                             width={15}
                             height={15}
-                            alt={token.token.name}
+                            alt={token.name}
                           />
                         </div>
                       </div>
                       <div className="font-semibold w-full truncate">
-                        {token.token.name}
+                        {token.fullname}
                       </div>
                     </div>
-                    <div className="md:col-span-1 text-right">
+                    {/* <div className="md:col-span-1 text-right">
                       $
                       {(
                         Number(token.token.price) * token.token.balance
                       ).toFixed(2)}
-                    </div>
+                    </div> */}
                     <div className="md:col-span-3 text-left md:text-right uppercase">
-                      {token.token.balance < 0.1 ? (
+                      {token.balance < 0.1 ? (
                         <span>
-                          {Truncate(token.token.balance.toString(), 12, "...")}
+                          {Truncate(token.balance.toString(), 12, "...")}
                         </span>
                       ) : (
-                        <span>{token.token.balance.toFixed(2)}</span>
+                        <span>{fixDecimal(token.balance, 2)}</span>
                       )}{" "}
-                      {token.token.symbol}
+                      {token.name}
                     </div>
                     <div className="md:col-span-2 grid grid-cols-3 place-items-center gap-2">
                       <TooltipProvider>
@@ -381,7 +438,7 @@ export default function App() {
                             <SendHorizonal size={25} />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Transfer</p>
+                            <p>Send</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>

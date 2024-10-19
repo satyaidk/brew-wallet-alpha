@@ -101,6 +101,7 @@ export default function Investments() {
   const [frequency, setFrequency] = useState<number>(0);
   const [refreshInterval, setRefreshInterval] = useState<number>(1);
   const [startDate, setStartDate] = useState<Date>(new Date(Date.now()));
+  const [earnInterest, setEarnInterest] = useState(true);
   const [endDate, setEndDate] = useState<Date>(() => {
     const end = new Date(Date.now());
     end.setMinutes(end.getMinutes() + 5);
@@ -126,7 +127,7 @@ export default function Investments() {
         setBalance(await getTokenBalance(token!, address, provider));
       }
     })();
-  }, [chainId, fromToken]);
+  }, [chainId, address, fromToken]);
 
   useEffect(() => {
     (async () => {
@@ -196,6 +197,18 @@ export default function Investments() {
     getCurrentTime()
   );
   const [endTimeValue, setEndTimeValue] = useState<string>(getCurrentTime(5));
+
+  const resetDateTime = () => {
+    console.log('asdasd')
+    setStartTimeValue(getCurrentTime())
+    setEndTimeValue(getCurrentTime(5))
+    
+    setStartDate(new Date(Date.now()))
+    const end = new Date(Date.now());
+    end.setMinutes(end.getMinutes() + 5);
+    setEndDate(end)
+
+  }
 
   const handleStartTimeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const time = e.target.value;
@@ -367,9 +380,7 @@ export default function Investments() {
                                 onClick={async () => {
                                   setWithdrawing(true);
                                   try {
-                                    const provider = await getJsonRpcProvider(
-                                      chainId.toString()
-                                    );
+                             
                                     const buildVault = await buildVaultRedeem(
                                       chainId.toString(),
                                       address,
@@ -489,7 +500,7 @@ export default function Investments() {
                     You do not have any active investment plans at the moment.
                   </p>
                   <button
-                    onClick={() => setDialogOpen(true)}
+                    onClick={() => { resetDateTime(); setDialogOpen(true)}}
                     className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white"
                   >
                     Create Your Plan
@@ -554,7 +565,7 @@ export default function Investments() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            onClick={() => setDialogOpen(true)}
+            onClick={() => { console.log("asda"); resetDateTime(); setDialogOpen(true)}}
             className="bg-black text-white p-4 rounded-full bg-gradient shadow-lg font-medium text-lg flex flex-row justify-center items-center gap-2 border border-accent hover:border-white hover:bg-transparent hover:text-white absolute bottom-4 right-4 z-50"
           >
             <PlusSquareIcon size={30} />
@@ -717,7 +728,9 @@ export default function Investments() {
                     <TrendingUp size={16} />
                     <h5>Earn interest? </h5>
                     <Switch className="bg-accent rounded-full data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-accent border border-accent"
-                    defaultChecked={getChainById(Number(chainId))?.tokens[targetToken].vault ? true : false}
+                    checked={getChainById(Number(chainId))?.tokens[targetToken].vault && earnInterest ? true : false}
+                    disabled={!getChainById(Number(chainId))?.tokens[targetToken].vault}
+                    onCheckedChange={ (checked) => { console.log(checked); setEarnInterest(checked) } }
                     />
                   </div>
                 </div>
@@ -870,7 +883,7 @@ export default function Investments() {
                   ),
                   getChainById(Number(chainId))?.tokens[fromToken].address!,
                   getChainById(Number(chainId))?.tokens[targetToken].address!,
-                  getChainById(Number(chainId))?.tokens[targetToken].vault ??
+                  getChainById(Number(chainId))?.tokens[targetToken].vault && earnInterest ? getChainById(Number(chainId))?.tokens[targetToken].vault! : 
                     ZeroAddress
                 );
                 await sendTransaction(
