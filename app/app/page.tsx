@@ -473,9 +473,9 @@ export default function App() {
           </TabsContent>
           <TabsContent
             value="Defi"
-            className="p-0 mt-0 flex flex-col-reverse md:grid md:grid-cols-3 justify-between items-start gap-4"
+            className="p-0 mt-0  justify-between items-start gap-4"
           >
-            <div className="flex flex-col col-span-2">
+            <div className="flex flex-col ">
               {tokenVaultDetails.length === 0 && (
                 <div className="flex flex-col justify-center items-center gap-2 py-4 md:h-[55vh] text-3xl">
                   <div className="flex flex-col gap-4 justify-center items-center font-bold">
@@ -534,11 +534,6 @@ export default function App() {
                   );
                 })}
             </div>
-            <PieChartComponent
-              title="DeFi Positions"
-              total={DefiTotal}
-              data={DefiData}
-            />
           </TabsContent>
           <TabsContent value="NFTs" className="p-0 mt-0">
             {NFTData.length <= 0 && (
