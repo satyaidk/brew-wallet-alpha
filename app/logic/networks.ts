@@ -17,19 +17,22 @@ export enum Network {
 export const networks = {
   localhost: {
     name: 'Local Chain',
-    chainId: 31337,
+    chainId: 313370,
     type: 'Testnet',
     url: "http://localhost:8545",
+    bundler: "",
     safeService: "",
     blockExplorer: "",
     api: "",
     easExplorer: "",
-  },
+  }, 
+
   mainnet: {
     name: 'Ethereum',
     type: 'mainnet',
     chainId: 1,
     url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
+    bundler: `https://api.pimlico.io/v2/ethereum/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     safeService: "https://safe-transaction-mainnet.safe.global",
     blockExplorer: "https://etherscan.io",
     api: `https://api.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
@@ -40,6 +43,7 @@ export const networks = {
     type: 'testnet',
     chainId: 11155111,
     url: `https://eth-sepolia.g.alchemy.com/v2/eCr9bFDzgYgDrox-mnXPPh7_koP-agKo`,
+    bundler: `https://api.pimlico.io/v2/sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     safeService: "https://safe-transaction-sepolia.safe.global",
     blockExplorer: "https://sepolia.etherscan.io",
     api: `https://api-sepolia.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
@@ -50,6 +54,7 @@ export const networks = {
     type: 'testnet',
     chainId: 84532,
     url: `https://base-sepolia.g.alchemy.com/v2/wRVILABVfp0WrfAv449B23mIW_SJqOwL`,
+    bundler: `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     blockExplorer: "https://sepolia.basescan.org",
     safeService: "https://safe-transaction-base-sepolia.safe.global",
     api: `https://api-sepolia.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
@@ -60,7 +65,20 @@ export const networks = {
     name: 'Base',
     type: 'mainnet',
     chainId: 8453,
-    url: `https://base-mainnet.g.alchemy.com/v2/NTGkSXMuKkoHwQ_W4eNpGlihUScplXYV`,
+    url: `https://base-mainnet.g.alchemy.com/v2/Zs890Y4JuSC19mPxz5HAoOCuRegcBoDH`,
+    bundler: `https://api.pimlico.io/v2/base/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
+    blockExplorer: "https://basescan.org",
+    safeService: "https://safe-transaction-base.safe.global",
+    api: `https://api-goerli.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
+    easExplorer: "",
+  },
+  basefork: {    
+
+    name: 'Base Fork',
+    type: 'mainnet',
+    chainId: 84530,
+    url: "https://node.zenguard.xyz/rpc/base",
+    bundler: "https://node.zenguard.xyz/bundler/base",
     blockExplorer: "https://basescan.org",
     safeService: "https://safe-transaction-base.safe.global",
     api: `https://api-goerli.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
@@ -71,6 +89,7 @@ export const networks = {
     type: 'mainnet',
     chainId: 10,
     url: `https://optimism-mainnet.infura.io/v3/${INFURA_API_KEY}`,
+    bundler: `https://api.pimlico.io/v2/optimism/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     blockExplorer: "https://optimistic.etherscan.io",
     safeService: "https://safe-transaction-optimism.safe.global",
     api: `https://api-optimistic.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
@@ -81,6 +100,7 @@ export const networks = {
     type: 'mainnet',
     chainId: 100,
     url: `https://rpc.ankr.com/gnosis`,
+    bundler: `https://api.pimlico.io/v2/gnosis/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     safeService: "https://safe-transaction-gnosis-chain.safe.global",
     blockExplorer: "https://gnosisscan.io",
     api: `https://api-goerli.etherscan.io/api?apikey=${ETHERSCAN_API_KEY}`,
@@ -89,8 +109,9 @@ export const networks = {
   polygontestnet: {
     name: 'Polygon',
     type: 'testnet',
-    chainId: 80001,
+    chainId: 80002,
     url: "https://matic-mumbai.chainstacklabs.com",
+    bundler: `https://api.pimlico.io/v2/polygon-amoy/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     safeService: "",
     blockExplorer: "https://mumbai.polygonscan.com",
     api: `https://api-testnet.polygonscan.com/api?module=account&action=balance&address=${accountAddress}&apikey=${POLYGONSCAN_API_KEY}`,
@@ -101,6 +122,18 @@ export const networks = {
     type: 'mainnet',
     chainId: 137,
     url: "https://rpc.ankr.com/polygon",
+    bundler: `https://api.pimlico.io/v2/polygon/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
+    safeService: "https://safe-transaction-polygon.safe.global",
+    blockExplorer: "https://polygonscan.com",
+    api: "",
+    easExplorer: "",
+  },
+  polygonfork: {
+    name: 'Polygon',
+    type: 'mainnet',
+    chainId: 1370,
+    url: "https://node.zenguard.xyz/rpc/polygon",
+    bundler: "https://node.zenguard.xyz/bundler/polygon",
     safeService: "https://safe-transaction-polygon.safe.global",
     blockExplorer: "https://polygonscan.com",
     api: "",
@@ -111,6 +144,7 @@ export const networks = {
     type: 'mainnet',
     chainId: 42161,
     url: "https://arb1.arbitrum.io/rpc",
+    bundler: `https://api.pimlico.io/v2/arbitrum/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     safeService: "https://safe-transaction-arbitrum.safe.global",
     blockExplorer: "https://arbiscan.io/",
     api: "",
@@ -121,6 +155,7 @@ export const networks = {
     type: 'mainnet',
     chainId: 42220,
     url: `https://celo-mainnet.infura.io/v3/${INFURA_API_KEY}`,
+    bundler: `https://api.pimlico.io/v2/celo/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`,
     safeService: "https://safe-transaction-polygon.safe.global",
     blockExplorer: "https://celoscan.com",
     api: "",
@@ -132,6 +167,7 @@ export const networks = {
 
 export class NetworkUtil {
   static getNetworkById(chainId: number) {
+    console.log(chainId)
     const network = Object.values(networks).find(
       (network) => chainId === network.chainId
     );

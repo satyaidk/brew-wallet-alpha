@@ -38,8 +38,19 @@ import {
 } from "../utils/Zapper";
 import { set } from "date-fns";
 import NumberTicker from "@/components/magicui/number-ticker";
+import useAccountStore from "../store/account/account.store";
+import { getJsonRpcProvider } from "../logic/web3";
+import { gasChainsTokens, getChainById } from "../utils/tokens";
+import { fixDecimal, getTokenBalance, getVaultBalance } from "../logic/utils";
+import { formatEther, ZeroAddress } from "ethers";
+import { useRouter } from "next/navigation";
 
 export default function App() {
+  const { chainId, setChainId } = useAccountStore();
+  const router = useRouter();
+  const [tokenDetails, setTokenDetails]: any = useState([]);
+  const [tokenVaultDetails, setTokenVaultDetails]: any = useState([]);
+
   const { toast } = useToast();
   const [openShowQR, setOpenShowQR] = useState(false);
   const { address } = useAccount();
@@ -68,6 +79,53 @@ export default function App() {
     addAllNetworks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const provider = await getJsonRpcProvider(chainId.toString());
+      let tokens = getChainById(Number(chainId))?.tokens;
+
+      let updatedTokens = [];
+
+      updatedTokens = await Promise.all(
+        tokens!.map(async (token) => {
+          const balance =
+            token.address == ZeroAddress
+              ? formatEther(await provider.getBalance(address))
+              : await getTokenBalance(token.address!, address, provider);
+
+          return {
+            ...token,
+            balance, // Add the balance to each token
+          };
+        })
+      );
+
+      setTokenDetails(updatedTokens);
+
+      let tokensWithVault = updatedTokens?.filter(
+        (token: any) => token.vault != undefined
+      );
+
+      if (tokensWithVault) {
+        updatedTokens = await Promise.all(
+          tokensWithVault.map(async (token) => {
+            const vaultBalance = await getVaultBalance(
+              token.vault!,
+              address,
+              provider
+            );
+            return {
+              ...token,
+              vaultBalance, // Add the vault balance to each token
+            };
+          })
+        );
+        console.log(updatedTokens);
+        setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
+      }
+    })();
+  }, [chainId, address]);
 
   function addAllNetworks() {
     setSelectedNetworks((prevSelectedNetworks) => {
@@ -170,27 +228,27 @@ export default function App() {
       </div>
       <Tabs defaultValue="Tokens" className="w-full flex flex-col gap-4 h-full">
         <div className="flex flex-col-reverse md:flex-row md:justify-between items-end md:items-center gap-2">
-          <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-3 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold">
+          <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-3 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-gradient data-[state=active]:text-black data-[state=active]:font-bold">
             <TabsTrigger
-              className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
+              className="py-3 text-sm rounded-none data-[state=active]:bg-secondary data-[state=active]:text-black data-[state=active]:font-bold"
               value="Tokens"
             >
               Tokens
             </TabsTrigger>
             <TabsTrigger
-              className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
+              className="py-3 text-sm rounded-none data-[state=active]:bg-secondary data-[state=active]:text-black data-[state=active]:font-bold"
               value="Defi"
             >
               DeFi
             </TabsTrigger>
             <TabsTrigger
-              className="py-3 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold"
+              className="py-3 text-sm rounded-none data-[state=active]:bg-secondary data-[state=active]:text-black data-[state=active]:font-bold"
               value="NFTs"
             >
               NFTs
             </TabsTrigger>
             {/* <TabsTrigger
-              className="py-2.5 text-sm rounded-none data-[state=active]:bg-white data-[state=active]:text-black"
+              className="py-2.5 text-sm rounded-none data-[state=active]:bg-gradient data-[state=active]:text-black"
               value="Transactions"
             >
               Transactions
@@ -198,27 +256,27 @@ export default function App() {
           </TabsList>
           <div className="flex flex-row justify-start items-center gap-3">
             <div className="flex flex-row justify-start items-center">
-              {selectedNetworks.slice(0, 5).map((snetwork, s) => {
-                return (
+              {/* {getChainById(chainId).map((snetwork, s) => {
+                return ( */}
                   <div
                     className=" w-7 h-7 bg-white rounded-full -ml-2.5"
-                    key={s}
+                    // key={s}
                   >
                     <Image
                       className=" rounded-full p-px"
-                      src={snetwork.logo}
+                      src={getChainById(chainId)?.icon!}
                       width={30}
                       height={30}
-                      alt={snetwork.name}
+                      alt={getChainById(chainId)?.name!}
                     />
                   </div>
-                );
-              })}
-              {selectedNetworks.length > 5 && (
+                {/* ); */}
+              {/* })} */}
+              {/* {selectedNetworks.length > 5 && (
                 <span className="w-7 h-7 cursor-default -ml-2.5 p-px flex justify-center items-center text-sm bg-black rounded-full text-white text-center">
                   {selectedNetworks.length - 5}
                 </span>
-              )}
+              )} */}
             </div>
             <Popover>
               <PopoverTrigger className="px-4 py-2.5 border border-accent bg-white text-black text-sm font-bold">
@@ -240,27 +298,27 @@ export default function App() {
                   </div>
                 </div>
                 <div className="overflow-y-scroll px-4 py-0 h-60">
-                  {Networks.map((network, c) => {
+                  {gasChainsTokens.map((network, c) => {
                     return (
                       <button
                         key={c}
                         className="flex flex-row justify-between items-center gap-2 py-2 w-full"
-                        onClick={() =>
-                          setSelectedNetworks((prevSelectedNetworks) =>
-                            prevSelectedNetworks.some(
-                              (item) => item.name === network.name
-                            )
-                              ? prevSelectedNetworks.filter(
-                                  (item) => item.name !== network.name
-                                )
-                              : [...prevSelectedNetworks, network]
-                          )
-                        }
+                        // onClick={() =>
+                        //   setSelectedNetworks((prevSelectedNetworks) =>
+                        //     prevSelectedNetworks.some(
+                        //       (item) => item.name === network.name
+                        //     )
+                        //       ? prevSelectedNetworks.filter(
+                        //           (item) => item.name !== network.name
+                        //         )
+                        //       : [...prevSelectedNetworks, network]
+                        //   )
+                        // }
                       >
                         <div className="flex flex-row justify-start items-center gap-2">
                           <Image
                             className="rounded-full bg-white p-px"
-                            src={network.logo}
+                            src={network.icon}
                             width={25}
                             height={25}
                             alt={network.name}
@@ -290,7 +348,7 @@ export default function App() {
         <div className="border border-accent flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
           <TabsContent value="Tokens" className="p-0 mt-0 flex flex-col gap-4">
             <div className="flex flex-col">
-              {tokensByNetwork.length === 0 && (
+              {tokenDetails.length === 0 && (
                 <div className="flex flex-col justify-center items-center gap-2 py-4 md:h-[55vh] text-3xl">
                   <div className="flex flex-col gap-4 justify-center items-center font-bold">
                     <h2>
@@ -325,63 +383,63 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {tokensByNetwork?.map((token, t) => {
+              {tokenDetails?.map((token: any, t: number) => {
                 return (
                   <div
                     key={t}
-                    className="grid grid-cols-2 md:grid-cols-9 gap-4 md:gap-8 py-5 md:py-3.5 items-center border-b border-accent"
+                    className="grid grid-cols-2 md:grid-cols-8 gap-4 md:gap-8 py-5 md:py-3.5 items-center border-b border-accent"
                   >
                     <div className="flex flex-row justify-start items-center gap-3 md:col-span-3">
                       <div className="bg-black rounded-full p-1 relative">
                         <img
                           className="rounded-full bg-white"
-                          src={
-                            getIconbySymbol(token.token.symbol) ||
-                            "/tokens/default.png"
-                          }
+                          src={token.icon || "/tokens/default.png"}
                           width={30}
                           height={30}
-                          alt={token.token.name}
+                          alt={token.name}
                         />
                         <div className="absolute right-0 top-0 text-white text-sm">
                           <Image
                             className="rounded-full bg-white p-px shadow-md"
-                            src={getNetworkLogobyName(token.token.network)}
+                            src={getChainById(Number(chainId))?.icon!}
                             width={15}
                             height={15}
-                            alt={token.token.name}
+                            alt={token.name}
                           />
                         </div>
                       </div>
                       <div className="font-semibold w-full truncate">
-                        {token.token.name}
+                        {token.fullname}
                       </div>
                     </div>
-                    <div className="md:col-span-1 text-right">
+                    {/* <div className="md:col-span-1 text-right">
                       $
                       {(
                         Number(token.token.price) * token.token.balance
                       ).toFixed(2)}
-                    </div>
+                    </div> */}
                     <div className="md:col-span-3 text-left md:text-right uppercase">
-                      {token.token.balance < 0.1 ? (
+                      {token.balance < 0.1 ? (
                         <span>
-                          {Truncate(token.token.balance.toString(), 12, "...")}
+                          {Truncate(token.balance.toString(), 12, "...")}
                         </span>
                       ) : (
-                        <span>{token.token.balance.toFixed(2)}</span>
+                        <span>{fixDecimal(token.balance, 2)}</span>
                       )}{" "}
-                      {token.token.symbol}
+                      {token.name}
                     </div>
                     <div className="md:col-span-2 grid grid-cols-3 place-items-center gap-2">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <SendHorizonal size={25} />
+                            <SendHorizonal
+                              size={25}
+                              onClick={() => router.push("/app/send")}
+                            />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Transfer</p>
+                            <p>Send</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -389,7 +447,10 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <RefreshCcw size={25} />
+                            <RefreshCcw
+                              size={25}
+                              onClick={() => router.push("/app/swap")}
+                            />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Swap</p>
@@ -400,7 +461,10 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <PiggyBank size={25} />
+                            <PiggyBank
+                              size={25}
+                              onClick={() => router.push("/app/investments")}
+                            />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Investments</p>
@@ -415,10 +479,10 @@ export default function App() {
           </TabsContent>
           <TabsContent
             value="Defi"
-            className="p-0 mt-0 flex flex-col-reverse md:grid md:grid-cols-3 justify-between items-start gap-4"
+            className="p-0 mt-0  justify-between items-start gap-4"
           >
-            <div className="flex flex-col col-span-2">
-              {DefiData.length === 0 && (
+            <div className="flex flex-col ">
+              {tokenVaultDetails.length === 0 && (
                 <div className="flex flex-col justify-center items-center gap-2 py-4 md:h-[55vh] text-3xl">
                   <div className="flex flex-col gap-4 justify-center items-center font-bold">
                     <h2>
@@ -434,8 +498,8 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {DefiData.length > 0 &&
-                DefiData?.map((defi, t) => {
+              {tokenVaultDetails.length > 0 &&
+                tokenVaultDetails?.map((vault: any, t: number) => {
                   return (
                     <div
                       key={t}
@@ -445,17 +509,17 @@ export default function App() {
                         <div className="bg-black rounded-full p-1 relative">
                           <img
                             className="rounded-full bg-white"
-                            src={defi.appImage || "/defi/default.png"}
+                            src={vault.icon || "/defi/default.png"}
                             width={30}
                             height={30}
-                            alt={defi.appName}
+                            alt={vault.name}
                           />
                         </div>
                         <div className="flex flex-row justify-start items-center gap-3 w-full">
                           <div className="font-semibold truncate">
-                            {defi.appName}
+                            {vault.fullname} Vault
                           </div>
-                          <div className="flex flex-row flex-wrap gap-2 justify-start items-center text-xs">
+                          {/* <div className="flex flex-row flex-wrap gap-2 justify-start items-center text-xs">
                             {defi.products.slice(0, 2).map((product, p) => {
                               return (
                                 <div
@@ -466,21 +530,16 @@ export default function App() {
                                 </div>
                               );
                             })}
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                       <div className=" text-right">
-                        ${defi.balanceUSD.toFixed(2)}
+                        {fixDecimal(vault.vaultBalance, 4)}
                       </div>
                     </div>
                   );
                 })}
             </div>
-            <PieChartComponent
-              title="DeFi Positions"
-              total={DefiTotal}
-              data={DefiData}
-            />
           </TabsContent>
           <TabsContent value="NFTs" className="p-0 mt-0">
             {NFTData.length <= 0 && (
