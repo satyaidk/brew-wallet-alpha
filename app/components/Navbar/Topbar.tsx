@@ -105,16 +105,44 @@ export default function Topbar() {
                 </div>
               </nav>
             </div>
-            <div className="px-6 py-3 w-full">
-              <WalletButton
-                walletInfo={walletInfo}
-                address={address}
-                disconnect={() => {
-                  disconnect();
-                  setWalletInfo(undefined);
+            <div className="flex flex-col gap-0 w-full divide-y divide-accent">
+              <Select
+                value={chainId.toString()}
+                onValueChange={(e) => {
+                  setChainId(parseInt(e));
                 }}
-                router={router}
-              />
+              >
+                <SelectTrigger className=" w-full h-full bg-white px-2 py-3 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+                  <SelectValue placeholder="From Chain" />
+                </SelectTrigger>
+                <SelectContent>
+                  {gasChainsTokens.map((from, f) => (
+                    <SelectItem key={f} value={from.chainId.toString()}>
+                      <div className="flex flex-row justify-center items-center gap-2">
+                        <Image
+                          className="bg-white rounded-full"
+                          src={from.icon}
+                          alt={from.name}
+                          width={25}
+                          height={25}
+                        />
+                        <h3 className="truncate">{from.name}</h3>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="px-6 py-3">
+                <WalletButton
+                  walletInfo={walletInfo}
+                  address={address}
+                  disconnect={() => {
+                    disconnect();
+                    setWalletInfo(undefined);
+                  }}
+                  router={router}
+                />
+              </div>
             </div>
           </SheetContent>
         </Sheet>
@@ -137,7 +165,7 @@ export default function Topbar() {
               setChainId(parseInt(e));
             }}
           >
-            <SelectTrigger className=" w-32 bg-white px-2 py-2 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
+            <SelectTrigger className=" w-44 bg-white px-6 py-3 border border-accent text-black flex flex-row gap-2 items-center justify-center text-sm rounded-full focus:outline-none focus:ring-offset-0 focus:ring-0 focus:ring-accent">
               <SelectValue placeholder="From Chain" />
             </SelectTrigger>
             <SelectContent>

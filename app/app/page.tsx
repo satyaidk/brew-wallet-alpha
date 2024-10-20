@@ -258,19 +258,19 @@ export default function App() {
             <div className="flex flex-row justify-start items-center">
               {/* {getChainById(chainId).map((snetwork, s) => {
                 return ( */}
-                  <div
-                    className=" w-7 h-7 bg-white rounded-full -ml-2.5"
-                    // key={s}
-                  >
-                    <Image
-                      className=" rounded-full p-px"
-                      src={getChainById(chainId)?.icon!}
-                      width={30}
-                      height={30}
-                      alt={getChainById(chainId)?.name!}
-                    />
-                  </div>
-                {/* ); */}
+              <div
+                className=" w-7 h-7 bg-white rounded-full -ml-2.5"
+                // key={s}
+              >
+                <Image
+                  className=" rounded-full p-px"
+                  src={getChainById(chainId)?.icon!}
+                  width={30}
+                  height={30}
+                  alt={getChainById(chainId)?.name!}
+                />
+              </div>
+              {/* ); */}
               {/* })} */}
               {/* {selectedNetworks.length > 5 && (
                 <span className="w-7 h-7 cursor-default -ml-2.5 p-px flex justify-center items-center text-sm bg-black rounded-full text-white text-center">
@@ -345,7 +345,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="border border-accent flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
+        <div className="border border-accent flex flex-col gap-2 w-full max-h-full h-24 px-2 md:px-4 pb-4 overflow-y-scroll flex-grow">
           <TabsContent value="Tokens" className="p-0 mt-0 flex flex-col gap-4">
             <div className="flex flex-col">
               {tokenDetails.length === 0 && (
@@ -387,9 +387,9 @@ export default function App() {
                 return (
                   <div
                     key={t}
-                    className="grid grid-cols-2 md:grid-cols-8 gap-4 md:gap-8 py-5 md:py-3.5 items-center border-b border-accent"
+                    className="grid grid-cols-3 md:flex flex-row justify-between items-center gap-4 md:gap-8 py-5 border-b border-accent"
                   >
-                    <div className="flex flex-row justify-start items-center gap-3 md:col-span-3">
+                    <div className="flex flex-row justify-start items-center gap-3 md:w-48">
                       <div className="bg-black rounded-full p-1 relative">
                         <img
                           className="rounded-full bg-white"
@@ -418,7 +418,7 @@ export default function App() {
                         Number(token.token.price) * token.token.balance
                       ).toFixed(2)}
                     </div> */}
-                    <div className="md:col-span-3 text-left md:text-right uppercase">
+                    <div className="text-left md:text-right uppercase md:w-32">
                       {token.balance < 0.1 ? (
                         <span>
                           {Truncate(token.balance.toString(), 12, "...")}
@@ -428,49 +428,51 @@ export default function App() {
                       )}{" "}
                       {token.name}
                     </div>
-                    <div className="md:col-span-2 grid grid-cols-3 place-items-center gap-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            {" "}
-                            <SendHorizonal
-                              size={25}
-                              onClick={() => router.push("/app/send")}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Send</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            {" "}
-                            <RefreshCcw
-                              size={25}
-                              onClick={() => router.push("/app/swap")}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Swap</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            {" "}
-                            <PiggyBank
-                              size={25}
-                              onClick={() => router.push("/app/investments")}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Investments</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                    <div className="md:w-36">
+                      <div className="grid grid-cols-3 place-items-center gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              {" "}
+                              <SendHorizonal
+                                size={25}
+                                onClick={() => router.push("/app/send")}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Send</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              {" "}
+                              <RefreshCcw
+                                size={25}
+                                onClick={() => router.push("/app/swap")}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Swap</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              {" "}
+                              <PiggyBank
+                                size={25}
+                                onClick={() => router.push("/app/investments")}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Investments</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </div>
                   </div>
                 );
