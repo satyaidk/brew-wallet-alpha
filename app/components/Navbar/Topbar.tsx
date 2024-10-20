@@ -69,39 +69,43 @@ export default function Topbar() {
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="sm:hidden bg-black text-white border-l border-accent p-0"
+            className="sm:hidden flex flex-col justify-between items-center bg-black text-white border-l border-accent p-0 divide-y divide-accent"
           >
-            <SheetHeader className="px-6 py-4 border-b border-accent">
-              <SheetTitle className="text-white text-left">Menu</SheetTitle>
-            </SheetHeader>
-            <nav className="grid gap-0 text-sm font-medium px-6 py-3">
-              {Links.map((link) => (
+            <div className="w-full divide-y divide-accent border-b border-accent">
+              <SheetHeader className="px-6 py-4">
+                <SheetTitle className="text-white text-left">Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="grid gap-0 text-sm font-medium px-6 py-3">
+                {Links.map((link) => (
+                  <div
+                    key={link.name}
+                    className={`flex flex-row gap-4 items-center justify-start pr-4 py-4 bg-black text-white ${
+                      pathname === link.href ? "font-bold" : "font-normal"
+                    }`}
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      router.push(link.href);
+                    }}
+                  >
+                    <Icons path={link.href} className="text-white" />
+                    <p>{link.name}</p>
+                  </div>
+                ))}
                 <div
-                  key={link.name}
                   className={`flex flex-row gap-4 items-center justify-start pr-4 py-4 bg-black text-white ${
-                    pathname === link.href ? "font-bold" : "font-normal"
+                    pathname === "/app/settings" ? "font-bold" : "font-normal"
                   }`}
                   onClick={() => {
                     setDrawerOpen(false);
-                    router.push(link.href);
+                    router.push("/app/settings");
                   }}
                 >
-                  <Icons path={link.href} className="text-white" />
-                  <p>{link.name}</p>
+                  <Settings />
+                  <p>Settings</p>
                 </div>
-              ))}
-              <div
-                className={`flex flex-row gap-4 items-center justify-start pr-4 py-4 bg-black text-white ${
-                  pathname === "/app/settings" ? "font-bold" : "font-normal"
-                }`}
-                onClick={() => {
-                  setDrawerOpen(false);
-                  router.push("/app/settings");
-                }}
-              >
-                <Settings />
-                <p>Settings</p>
-              </div>
+              </nav>
+            </div>
+            <div className="px-6 py-3 w-full">
               <WalletButton
                 walletInfo={walletInfo}
                 address={address}
@@ -111,7 +115,7 @@ export default function Topbar() {
                 }}
                 router={router}
               />
-            </nav>
+            </div>
           </SheetContent>
         </Sheet>
       </div>

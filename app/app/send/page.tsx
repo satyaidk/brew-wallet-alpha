@@ -110,7 +110,7 @@ export default function Bridge() {
   return (
     <div className="w-full h-full text-white border border-accent flex flex-col justify-start md:justify-center items-start md:items-center gap-6 px-4 py-4 md:py-6">
       <div className="bg-transparent border border-accent max-w-lg w-full flex flex-col">
-        <div className="flex flex-row justify-between items-center gap-2 py-3.5 border-b border-accent px-4 md:px-6">
+        <div className="flex flex-row justify-between items-center gap-2 py-5 border-b border-accent px-4 md:px-6">
           <h2 className="font-bold text-xl truncate">Send Asset</h2>
         </div>
         <div className="flex flex-col gap-4 px-4 md:px-6 pb-6 pt-7 relative">
