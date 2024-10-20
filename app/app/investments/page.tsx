@@ -23,7 +23,7 @@ import {
   Loader2,
   PlusSquareIcon,
   Wallet2,
-  TrendingUp,
+  TrendingUp
 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -131,7 +131,6 @@ export default function Investments() {
 
   useEffect(() => {
     (async () => {
-      console.log(investmentAdded);
       if (!investmentAdded) {
         const provider = await getJsonRpcProvider(chainId.toString());
         let tokensWithVault = getChainById(Number(chainId))?.tokens.filter(
@@ -199,15 +198,16 @@ export default function Investments() {
   const [endTimeValue, setEndTimeValue] = useState<string>(getCurrentTime(5));
 
   const resetDateTime = () => {
-    console.log("asdasd");
-    setStartTimeValue(getCurrentTime());
-    setEndTimeValue(getCurrentTime(5));
-
-    setStartDate(new Date(Date.now()));
+    console.log('asdasd')
+    setStartTimeValue(getCurrentTime())
+    setEndTimeValue(getCurrentTime(5))
+    
+    setStartDate(new Date(Date.now()))
     const end = new Date(Date.now());
     end.setMinutes(end.getMinutes() + 5);
-    setEndDate(end);
-  };
+    setEndDate(end)
+
+  }
 
   const handleStartTimeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     const time = e.target.value;
@@ -271,169 +271,164 @@ export default function Investments() {
 
   return (
     <div className="flex flex-col gap-8 justify-start p-4 items-start border border-accent w-full h-full relative">
-      {tokenVaultDetails && (
-        <div className="flex flex-col w-full gap-4">
-          {Boolean(
-            tokenVaultDetails.filter(
-              (tokenVault) => tokenVault.vaultBalance > 0
-            ).length
-          ) && <h3 className="font-bold text-2xl">Earning Yeild</h3>}
+      <div className="flex flex-col w-full gap-4">
+        {Boolean(
+          tokenVaultDetails.filter((tokenVault) => tokenVault.vaultBalance > 0)
+            .length
+        ) && <h3 className="font-bold text-2xl">Earning Yeild</h3>}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-white w-full">
-            {tokenVaultDetails
-              .filter((tokenVault) => tokenVault.vaultBalance > 0)
-              .map((tokenVault, index) => (
-                <div
-                  key={index}
-                  className="border-accent w-full flex flex-col gap-0 border"
-                >
-                  <div className="flex flex-row justify-between items-center px-4 py-3 border-b border-accent">
-                    <div className="flex flex-row justify-start items-center gap-2">
-                      <Image
-                        src={tokenVault.icon!}
-                        alt="From Token"
-                        width={30}
-                        height={30}
-                      />
-                      <div className="font-semibold">{tokenVault.name!}</div>
-                    </div>
-                    <div>
-                      <Image
-                        className="bg-white rounded-full"
-                        src={getChainById(Number(chainId))?.icon!}
-                        alt="Wallet Icon"
-                        width={30}
-                        height={30}
-                      />
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-white w-full">
+          {tokenVaultDetails
+            .filter((tokenVault) => tokenVault.vaultBalance > 0)
+            .map((tokenVault, index) => (
+              <div
+                key={index}
+                className="border-accent w-full flex flex-col gap-0 border"
+              >
+                <div className="flex flex-row justify-between items-center px-4 py-3 border-b border-accent">
+                  <div className="flex flex-row justify-start items-center gap-2">
+                    <Image
+                      src={tokenVault.icon!}
+                      alt="From Token"
+                      width={30}
+                      height={30}
+                    />
+                    <div className="font-semibold">{tokenVault.name!}</div>
                   </div>
-                  <div className="px-4 py-3 flex flex-col justify-start items-start">
-                    <div className="flex flex-col justify-between items-start gap-4 w-full">
-                      <div className="flex flex-row justify-between items-center w-full">
-                        <h4 className="font-semibold">Balance</h4>
-                        <h5>
-                          {fixDecimal(
-                            tokenVault.vaultBalance,
-                            parseInt(tokenVault.vaultBalance) ? 4 : 6
-                          )}
-                        </h5>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 w-full">
-                        <Dialog>
-                          <DialogTrigger
-                            onClick={() => setSelectedVault(tokenVault)}
-                            className="border border-accent px-6 py-2.5 bg-black text-white text-sm hover:border-white hover:text-white"
-                          >
-                            Withdraw
-                          </DialogTrigger>
-                          <DialogContent className="bg-black text-white dark:bg-white flex flex-col justify-start items-start gap-4 rounded-none sm:rounded-none max-w-lg mx-auto border border-accent">
-                            <DialogHeader>
-                              <DialogTitle>Withdraw Funds</DialogTitle>
-                              <DialogDescription>
-                                Withdraw your funds from the vault to your
-                                wallet on desired chain.
+                  <div>
+                    <Image
+                      className="bg-white rounded-full"
+                      src={getChainById(Number(chainId))?.icon!}
+                      alt="Wallet Icon"
+                      width={30}
+                      height={30}
+                    />
+                  </div>
+                </div>
+                <div className="px-4 py-3 flex flex-col justify-start items-start">
+                  <div className="flex flex-col justify-between items-start gap-4 w-full">
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <h4 className="font-semibold">Balance</h4>
+                      <h5>
+                        {fixDecimal(
+                          tokenVault.vaultBalance,
+                          parseInt(tokenVault.vaultBalance) ? 4 : 6
+                        )}
+                      </h5>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                      <Dialog>
+                        <DialogTrigger
+                          onClick={() => setSelectedVault(tokenVault)}
+                          className="border border-accent px-6 py-2.5 bg-black text-white text-sm hover:border-white hover:text-white"
+                        >
+                          Withdraw
+                        </DialogTrigger>
+                        <DialogContent className="bg-black text-white dark:bg-white flex flex-col justify-start items-start gap-4 rounded-none sm:rounded-none max-w-lg mx-auto border border-accent">
+                          <DialogHeader>
+                            <DialogTitle>Withdraw Funds</DialogTitle>
+                            <DialogDescription>
+                              Withdraw your funds from the vault to your wallet
+                              on desired chain.
+                            </DialogDescription>
+                            <div className="flex flex-col gap-0 justify-start items-start pt-4">
+                              {/* <div className="grid grid-cols-5 justify-center items-center gap-4 w-full "> */}
+
+                              <DialogDescription className="font-semibold text-center w-full text-white">
+                                You are about to withdraw interest bearing token
+                                from the vault to your account
                               </DialogDescription>
-                              <div className="flex flex-col gap-0 justify-start items-start pt-4">
-                                {/* <div className="grid grid-cols-5 justify-center items-center gap-4 w-full "> */}
 
-                                <DialogDescription className="font-semibold text-center w-full text-white">
-                                  You are about to withdraw interest bearing
-                                  token from the vault to your account
-                                </DialogDescription>
+                              <div className="w-full border-t border-accent my-4"></div>
 
-                                <div className="w-full border-t border-accent my-4"></div>
-
-                                <div className="flex flex-row justify-between items-center w-full">
-                                  <h4 className="font-semibold">
-                                    Withdraw Amount
-                                  </h4>
-                                  <div className="flex flex-row justify-start items-center gap-2">
-                                    <Image
-                                      src={
-                                        getTokenInfo(
-                                          Number(chainId),
-                                          selectedVault?.address
-                                        )?.icon!
-                                      }
-                                      alt="From Token"
-                                      width={30}
-                                      height={30}
-                                    />
-                                    <div className="font-semibold text-red-500">
-                                      -
-                                      {fixDecimal(
-                                        selectedVault?.vaultBalance,
-                                        parseInt(tokenVault.vaultBalance)
-                                          ? 4
-                                          : 6
-                                      )}
-                                    </div>
-                                    <div className="font-semibold">
-                                      {
-                                        getTokenInfo(
-                                          Number(chainId),
-                                          selectedVault?.token
-                                        )?.name
-                                      }
-                                    </div>
+                              <div className="flex flex-row justify-between items-center w-full">
+                                <h4 className="font-semibold">
+                                  Withdraw Amount
+                                </h4>
+                                <div className="flex flex-row justify-start items-center gap-2">
+                                  <Image
+                                    src={
+                                      getTokenInfo(
+                                        Number(chainId),
+                                        selectedVault?.address
+                                      )?.icon!
+                                    }
+                                    alt="From Token"
+                                    width={30}
+                                    height={30}
+                                  />
+                                  <div className="font-semibold text-red-500">
+                                    -
+                                    {fixDecimal(
+                                      selectedVault?.vaultBalance,
+                                      parseInt(tokenVault.vaultBalance) ? 4 : 6
+                                    )}
+                                  </div>
+                                  <div className="font-semibold">
+                                    {
+                                      getTokenInfo(
+                                        Number(chainId),
+                                        selectedVault?.token
+                                      )?.name
+                                    }
                                   </div>
                                 </div>
-                                <button
-                                  className="bg-white border border-accent hover:bg-transparent hover:text-white text-black w-full px-6 py-3 text-lg mt-8"
-                                  onClick={async () => {
-                                    setWithdrawing(true);
-                                    try {
-                                      const buildVault = await buildVaultRedeem(
-                                        chainId.toString(),
-                                        address,
-                                        tokenVault.vault
-                                      );
-
-                                      let calls = [buildVault];
-
-                                      await sendTransaction(
-                                        chainId.toString(),
-                                        calls,
-                                        validator,
-                                        address
-                                      );
-                                      setInvestmentAdded(true);
-                                    } catch (e) {
-                                      console.log("Failed to withdraw", e);
-                                    }
-                                    setWithdrawing(false);
-                                  }}
-                                >
-                                  {withdrawing ? (
-                                    <span className="flex items-center justify-center">
-                                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                      Withdrawing funds to account...
-                                    </span>
-                                  ) : (
-                                    "Withdraw"
-                                  )}
-                                </button>
                               </div>
+                              <button
+                                className="bg-white border border-accent hover:bg-transparent hover:text-white text-black w-full px-6 py-3 text-lg mt-8"
+                                onClick={async () => {
+                                  setWithdrawing(true);
+                                  try {
+                             
+                                    const buildVault = await buildVaultRedeem(
+                                      chainId.toString(),
+                                      address,
+                                      tokenVault.vault
+                                    );
 
-                              {investmentAdded && (
-                                <>
+                                    let calls = [buildVault];
+
+                                    await sendTransaction(
+                                      chainId.toString(),
+                                      calls,
+                                      validator,
+                                      address
+                                    );
+                                    setInvestmentAdded(true);
+                                  } catch (e) {
+                                    console.log("Failed to withdraw", e);
+                                  }
+                                  setWithdrawing(false);
+                                }}
+                              >
+                                {withdrawing ? (
                                   <span className="flex items-center justify-center">
-                                    Funds withdrew successfully 🚀✅
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Withdrawing funds to account...
                                   </span>
-                                </>
-                              )}
-                            </DialogHeader>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
+                                ) : (
+                                  "Withdraw"
+                                )}
+                              </button>
+                            </div>
+
+                            {investmentAdded && (
+                              <>
+                                <span className="flex items-center justify-center">
+                                  Funds withdrew successfully 🚀✅
+                                </span>
+                              </>
+                            )}
+                          </DialogHeader>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 </div>
-              ))}
-          </div>
+              </div>
+            ))}
         </div>
-      )}
-
+      </div>
       <div className="flex flex-col gap-4 flex-grow w-full">
         <h3 className="font-bold text-2xl">Investment Plans</h3>
 
@@ -441,6 +436,8 @@ export default function Investments() {
           defaultValue="active"
           className="w-full flex flex-col gap-4 h-full"
         >
+
+  
           <div className="flex flex-col-reverse md:flex-row md:justify-between items-end md:items-center gap-2">
             <TabsList className="rounded-none h-fit p-0 divide-x divide-accent border border-accent grid grid-cols-2 md:max-w-md w-full gap-0 bg-black  text-white data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold">
               <TabsTrigger
@@ -459,7 +456,10 @@ export default function Investments() {
           </div>
 
           <div className="flex flex-col gap-2 w-full max-h-full h-24 overflow-y-scroll flex-grow">
-            <TabsContent value="active" className="h-full mt-0">
+            <TabsContent
+              value="active"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow mt-0"
+            >
               {investments.filter(
                 (investment) =>
                   investment.validUntil > Math.floor(Date.now() / 1000)
@@ -474,21 +474,17 @@ export default function Investments() {
                       (inv) => inv === investment
                     );
                     return (
-                      <div
+                      <InvestmentCard
                         key={index}
-                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 text-white w-full  max-h-full h-24 overflow-y-scroll flex-grow mt-0"
-                      >
-                        <InvestmentCard
-                          investment={investment}
-                          jobExecution={jobExecutions[originalIndex]}
-                          chainId={chainId}
-                          address={address}
-                        />
-                      </div>
+                        investment={investment}
+                        jobExecution={jobExecutions[originalIndex]}
+                        chainId={chainId}
+                        address={address}
+                      />
                     );
                   })
               ) : (
-                <div className="col-span-full flex flex-col items-center justify-center text-center p-8 h-full">
+                <div className="col-span-full flex flex-col items-center justify-center text-center p-8">
                   <Image
                     src="/icons/empty.png"
                     alt="No active investments"
@@ -503,10 +499,7 @@ export default function Investments() {
                     You do not have any active investment plans at the moment.
                   </p>
                   <button
-                    onClick={() => {
-                      resetDateTime();
-                      setDialogOpen(true);
-                    }}
+                    onClick={() => { resetDateTime(); setDialogOpen(true)}}
                     className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white"
                   >
                     Create Your Plan
@@ -515,9 +508,12 @@ export default function Investments() {
               )}
             </TabsContent>
 
-            <TabsContent value="history" className="h-full mt-0">
+            <TabsContent
+              value="history"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4"
+            >
               {investments.length === 0 ? (
-                <div className="col-span-full flex flex-col items-center justify-center text-center p-8 h-full">
+                <div className="col-span-full flex flex-col items-center justify-center text-center p-8">
                   <Image
                     src="/icons/empty.png"
                     alt="No active investments"
@@ -532,37 +528,32 @@ export default function Investments() {
                     You do not have any active investment plans at the moment.
                   </p>
                   <button
-                    onClick={() => {
-                      resetDateTime();
-                      setDialogOpen(true);
-                    }}
+                    onClick={() => setDialogOpen(true)}
                     className="bg-white text-black px-6 py-2  hover:bg-accent transition-colors hover:bg-transparent hover:text-white"
                   >
                     Create Your Plan
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-                  {investments
-                    .filter(
-                      (investment) =>
-                        investment.validUntil < Math.floor(Date.now() / 1000)
-                    )
-                    .map((investment, index) => {
-                      const originalIndex = investments.findIndex(
-                        (inv) => inv === investment
-                      );
-                      return (
-                        <InvestmentCard
-                          key={index}
-                          investment={investment}
-                          jobExecution={jobExecutions[originalIndex]}
-                          chainId={chainId}
-                          address={address}
-                        />
-                      );
-                    })}
-                </div>
+                investments
+                  .filter(
+                    (investment) =>
+                      investment.validUntil < Math.floor(Date.now() / 1000)
+                  )
+                  .map((investment, index) => {
+                    const originalIndex = investments.findIndex(
+                      (inv) => inv === investment
+                    );
+                    return (
+                      <InvestmentCard
+                        key={index}
+                        investment={investment}
+                        jobExecution={jobExecutions[originalIndex]}
+                        chainId={chainId}
+                        address={address}
+                      />
+                    );
+                  })
               )}
 
               {/* </div> */}
@@ -573,11 +564,7 @@ export default function Investments() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
-            onClick={() => {
-              console.log("asda");
-              resetDateTime();
-              setDialogOpen(true);
-            }}
+            onClick={() => { console.log("asda"); resetDateTime(); setDialogOpen(true)}}
             className="bg-black text-white p-4 rounded-full bg-gradient shadow-lg font-medium text-lg flex flex-row justify-center items-center gap-2 border border-accent hover:border-white hover:bg-transparent hover:text-white absolute bottom-4 right-4 z-50"
           >
             <PlusSquareIcon size={30} />
@@ -739,22 +726,10 @@ export default function Investments() {
                   <div className="flex flex-row justify-center items-center gap-2 text-accent">
                     <TrendingUp size={16} />
                     <h5>Earn interest? </h5>
-                    <Switch
-                      className="bg-accent rounded-full data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-accent border border-accent"
-                      checked={
-                        getChainById(Number(chainId))?.tokens[targetToken]
-                          .vault && earnInterest
-                          ? true
-                          : false
-                      }
-                      disabled={
-                        !getChainById(Number(chainId))?.tokens[targetToken]
-                          .vault
-                      }
-                      onCheckedChange={(checked) => {
-                        console.log(checked);
-                        setEarnInterest(checked);
-                      }}
+                    <Switch className="bg-accent rounded-full data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-accent border border-accent"
+                    checked={getChainById(Number(chainId))?.tokens[targetToken].vault && earnInterest ? true : false}
+                    disabled={!getChainById(Number(chainId))?.tokens[targetToken].vault}
+                    onCheckedChange={ (checked) => { console.log(checked); setEarnInterest(checked) } }
                     />
                   </div>
                 </div>
@@ -907,10 +882,8 @@ export default function Investments() {
                   ),
                   getChainById(Number(chainId))?.tokens[fromToken].address!,
                   getChainById(Number(chainId))?.tokens[targetToken].address!,
-                  getChainById(Number(chainId))?.tokens[targetToken].vault &&
-                    earnInterest
-                    ? getChainById(Number(chainId))?.tokens[targetToken].vault!
-                    : ZeroAddress
+                  getChainById(Number(chainId))?.tokens[targetToken].vault && earnInterest ? getChainById(Number(chainId))?.tokens[targetToken].vault! : 
+                    ZeroAddress
                 );
                 await sendTransaction(
                   chainId.toString(),

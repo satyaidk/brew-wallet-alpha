@@ -154,7 +154,7 @@ export function InvestmentCard({
                   width={20}
                   height={20}
                 />
-                <div className="font-semibold text-red-500">
+                <div className="font-semibold" style={{ color: '#ff5f52' }}>
                   -
                   {fixDecimal(
                     formatUnits(
@@ -182,7 +182,7 @@ export function InvestmentCard({
                   width={20}
                   height={20}
                 />
-                <div className="font-semibold text-green-500">
+                <div className="font-semibold" style={{ color: '#40b66b' }}>
                   +{" "}
                   {fixDecimal(
                     formatUnits(

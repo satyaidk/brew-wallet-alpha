@@ -40,7 +40,7 @@ import { set } from "date-fns";
 import NumberTicker from "@/components/magicui/number-ticker";
 import useAccountStore from "../store/account/account.store";
 import { getJsonRpcProvider } from "../logic/web3";
-import { getChainById } from "../utils/tokens";
+import { gasChainsTokens, getChainById } from "../utils/tokens";
 import { fixDecimal, getTokenBalance, getVaultBalance } from "../logic/utils";
 import { formatEther, ZeroAddress } from "ethers";
 import { useRouter } from "next/navigation";
@@ -256,27 +256,27 @@ export default function App() {
           </TabsList>
           <div className="flex flex-row justify-start items-center gap-3">
             <div className="flex flex-row justify-start items-center">
-              {selectedNetworks.slice(0, 5).map((snetwork, s) => {
-                return (
+              {/* {getChainById(chainId).map((snetwork, s) => {
+                return ( */}
                   <div
                     className=" w-7 h-7 bg-white rounded-full -ml-2.5"
-                    key={s}
+                    // key={s}
                   >
                     <Image
                       className=" rounded-full p-px"
-                      src={snetwork.logo}
+                      src={getChainById(chainId)?.icon!}
                       width={30}
                       height={30}
-                      alt={snetwork.name}
+                      alt={getChainById(chainId)?.name!}
                     />
                   </div>
-                );
-              })}
-              {selectedNetworks.length > 5 && (
+                {/* ); */}
+              {/* })} */}
+              {/* {selectedNetworks.length > 5 && (
                 <span className="w-7 h-7 cursor-default -ml-2.5 p-px flex justify-center items-center text-sm bg-black rounded-full text-white text-center">
                   {selectedNetworks.length - 5}
                 </span>
-              )}
+              )} */}
             </div>
             <Popover>
               <PopoverTrigger className="px-4 py-2.5 border border-accent bg-white text-black text-sm font-bold">
@@ -298,27 +298,27 @@ export default function App() {
                   </div>
                 </div>
                 <div className="overflow-y-scroll px-4 py-0 h-60">
-                  {Networks.map((network, c) => {
+                  {gasChainsTokens.map((network, c) => {
                     return (
                       <button
                         key={c}
                         className="flex flex-row justify-between items-center gap-2 py-2 w-full"
-                        onClick={() =>
-                          setSelectedNetworks((prevSelectedNetworks) =>
-                            prevSelectedNetworks.some(
-                              (item) => item.name === network.name
-                            )
-                              ? prevSelectedNetworks.filter(
-                                  (item) => item.name !== network.name
-                                )
-                              : [...prevSelectedNetworks, network]
-                          )
-                        }
+                        // onClick={() =>
+                        //   setSelectedNetworks((prevSelectedNetworks) =>
+                        //     prevSelectedNetworks.some(
+                        //       (item) => item.name === network.name
+                        //     )
+                        //       ? prevSelectedNetworks.filter(
+                        //           (item) => item.name !== network.name
+                        //         )
+                        //       : [...prevSelectedNetworks, network]
+                        //   )
+                        // }
                       >
                         <div className="flex flex-row justify-start items-center gap-2">
                           <Image
                             className="rounded-full bg-white p-px"
-                            src={network.logo}
+                            src={network.icon}
                             width={25}
                             height={25}
                             alt={network.name}
