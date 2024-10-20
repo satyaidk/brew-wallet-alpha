@@ -46,11 +46,10 @@ import { formatEther, ZeroAddress } from "ethers";
 import { useRouter } from "next/navigation";
 
 export default function App() {
-
   const { chainId, setChainId } = useAccountStore();
   const router = useRouter();
-  const [ tokenDetails, setTokenDetails ]: any = useState([]);
-  const [ tokenVaultDetails, setTokenVaultDetails ]: any = useState([]);
+  const [tokenDetails, setTokenDetails]: any = useState([]);
+  const [tokenVaultDetails, setTokenVaultDetails]: any = useState([]);
 
   const { toast } = useToast();
   const [openShowQR, setOpenShowQR] = useState(false);
@@ -83,49 +82,50 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-        const provider = await getJsonRpcProvider(chainId.toString());
-        let tokens = getChainById(Number(chainId))?.tokens
+      const provider = await getJsonRpcProvider(chainId.toString());
+      let tokens = getChainById(Number(chainId))?.tokens;
 
-        let updatedTokens = [];
+      let updatedTokens = [];
 
+      updatedTokens = await Promise.all(
+        tokens!.map(async (token) => {
+          const balance =
+            token.address == ZeroAddress
+              ? formatEther(await provider.getBalance(address))
+              : await getTokenBalance(token.address!, address, provider);
 
+          return {
+            ...token,
+            balance, // Add the balance to each token
+          };
+        })
+      );
+
+      setTokenDetails(updatedTokens);
+
+      let tokensWithVault = updatedTokens?.filter(
+        (token: any) => token.vault != undefined
+      );
+
+      if (tokensWithVault) {
         updatedTokens = await Promise.all(
-          tokens!.map(async (token) => {
-            const balance = token.address == ZeroAddress ? formatEther(await provider.getBalance(address)) : await getTokenBalance(token.address!, address, provider);
-
+          tokensWithVault.map(async (token) => {
+            const vaultBalance = await getVaultBalance(
+              token.vault!,
+              address,
+              provider
+            );
             return {
               ...token,
-              balance, // Add the balance to each token
+              vaultBalance, // Add the vault balance to each token
             };
-          }))
-
-        setTokenDetails(updatedTokens)
-
-        let tokensWithVault = updatedTokens?.filter(
-          (token: any) => token.vault != undefined
+          })
         );
-
-        if (tokensWithVault) {
-          updatedTokens = await Promise.all(
-            tokensWithVault.map(async (token) => {
-              const vaultBalance = await getVaultBalance(
-                token.vault!,
-                address,
-                provider
-              );
-              return {
-                ...token,
-                vaultBalance, // Add the vault balance to each token
-              };
-            })
-        );
-        console.log(updatedTokens)
+        console.log(updatedTokens);
         setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
-        }
-      
+      }
     })();
-  }, [chainId, address ]);
-
+  }, [chainId, address]);
 
   function addAllNetworks() {
     setSelectedNetworks((prevSelectedNetworks) => {
@@ -348,7 +348,7 @@ export default function App() {
         <div className="border border-accent flex flex-col gap-2 w-full max-h-full h-24 px-4 pb-4 overflow-y-scroll flex-grow">
           <TabsContent value="Tokens" className="p-0 mt-0 flex flex-col gap-4">
             <div className="flex flex-col">
-              { tokenDetails.length === 0 && (
+              {tokenDetails.length === 0 && (
                 <div className="flex flex-col justify-center items-center gap-2 py-4 md:h-[55vh] text-3xl">
                   <div className="flex flex-col gap-4 justify-center items-center font-bold">
                     <h2>
@@ -383,20 +383,17 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {tokenDetails?.map((token: any) => {
+              {tokenDetails?.map((token: any, t: number) => {
                 return (
                   <div
-                    // key={t}
-                    className="grid grid-cols-2 md:grid-cols-9 gap-4 md:gap-8 py-5 md:py-3.5 items-center border-b border-accent"
+                    key={t}
+                    className="grid grid-cols-2 md:grid-cols-8 gap-4 md:gap-8 py-5 md:py-3.5 items-center border-b border-accent"
                   >
                     <div className="flex flex-row justify-start items-center gap-3 md:col-span-3">
                       <div className="bg-black rounded-full p-1 relative">
                         <img
                           className="rounded-full bg-white"
-                          src={
-                            token.icon ||
-                            "/tokens/default.png"
-                          }
+                          src={token.icon || "/tokens/default.png"}
                           width={30}
                           height={30}
                           alt={token.name}
@@ -436,7 +433,10 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <SendHorizonal size={25} onClick={()=> router.push('/app/send')}/>
+                            <SendHorizonal
+                              size={25}
+                              onClick={() => router.push("/app/send")}
+                            />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Send</p>
@@ -447,7 +447,10 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <RefreshCcw size={25} onClick={()=> router.push('/app/swap')}/>
+                            <RefreshCcw
+                              size={25}
+                              onClick={() => router.push("/app/swap")}
+                            />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Swap</p>
@@ -458,7 +461,10 @@ export default function App() {
                         <Tooltip>
                           <TooltipTrigger>
                             {" "}
-                            <PiggyBank size={25} onClick={()=> router.push('/app/investments')} />
+                            <PiggyBank
+                              size={25}
+                              onClick={() => router.push("/app/investments")}
+                            />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Investments</p>
@@ -493,10 +499,10 @@ export default function App() {
                 </div>
               )}
               {tokenVaultDetails.length > 0 &&
-                tokenVaultDetails?.map((vault: any) => {
+                tokenVaultDetails?.map((vault: any, t: number) => {
                   return (
                     <div
-                      // key={t}
+                      key={t}
                       className="flex flex-row justify-between items-center gap-4 gap-y-4 md:gap-8 py-3.5 border-b border-accent first:pt-1"
                     >
                       <div className="flex flex-row justify-start items-center gap-3">
