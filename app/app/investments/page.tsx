@@ -20,7 +20,7 @@ import { ChangeEventHandler, useEffect, useState } from "react";
 import {
   BadgeInfo,
   CalendarIcon,
-  Loader2,
+  Ellipsis,
   PlusSquareIcon,
   Wallet2,
   TrendingUp,
@@ -66,6 +66,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
+import BrewLoader from "../../../public/icons/bloader.svg";
+import LoadingIndicator from "@/components/ui/loader";
 
 type Investment = {
   token: string;
@@ -407,10 +409,8 @@ export default function Investments() {
                                   }}
                                 >
                                   {withdrawing ? (
-                                    <span className="flex items-center justify-center">
-                                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                      Withdrawing funds to account...
-                                    </span>
+                                
+                                    <LoadingIndicator text="Withdrawing funds to account..." />
                                   ) : (
                                     "Withdraw"
                                   )}
@@ -878,7 +878,7 @@ export default function Investments() {
             </div>
           </div>
           <button
-            className="bg-transparent py-3 w-full bg-gradient text-white font-semibold border border-accent hover:bg-transparent hover:text-white text-lg"
+            className={`bg-transparent py-3 w-full text-white font-semibold border border-accent ${isLoading ? '' : 'bg-gradient hover:bg-transparent hover:text-white'} text-lg`}
             disabled={isLoading}
             onClick={async () => {
               setIsLoading(true);
@@ -965,10 +965,7 @@ export default function Investments() {
             }}
           >
             {isLoading ? (
-              <span className="flex items-center justify-center">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Creating your investement plan...
-              </span>
+            <LoadingIndicator text="Brewing your plan..." />
             ) : (
               "Create Plan"
             )}

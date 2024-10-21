@@ -24,11 +24,13 @@ import { getJsonRpcProvider } from "@/app/logic/web3";
 import { ZeroAddress, formatEther, parseEther, parseUnits } from "ethers";
 import {
   buildTransferToken,
+  fixDecimal,
   getTokenBalance,
   getTokenDecimals,
 } from "@/app/logic/utils";
 import { Hex } from "viem";
 import Truncate from "@/app/utils/truncate";
+import LoadingIndicator from "@/components/ui/loader";
 
 interface GasChainType {
   name: string;
@@ -41,11 +43,12 @@ export default function Bridge() {
   const [selectedGasChain, setSelectedGasChain] = useState<GasChainType>(
     gasChainsTokens[0]
   );
-  const [selectedTransferChainID, setSelectedTransferChainID] =
     useState<number>(0);
   const [selectedTokenID, setSelectedTokenID] = useState<number>(0);
 
   const [balance, setBalance] = useState<string>("0");
+  const [sending, setSending] = useState(false);
+
 
   const [tokenValue, setTokenValue] = useState<string>("0");
   const [toAddress, setToAddress] = useState<string>("");
@@ -117,8 +120,8 @@ export default function Bridge() {
           <div className="flex flex-col gap-2">
             <div className="flex flex-row justify-end items-center text-sm absolute top-1.5 right-6">
               <div className="flex flex-row justify-center items-center gap-1">
-                <div>{balance} ETH</div>
-                <button className="font-bold">Max</button>
+                <div>{ fixDecimal(balance, 4)} ETH</div>
+                <button className="font-bold" onClick={()=> { setTokenValue(balance)}}>Max</button>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3">
@@ -236,12 +239,23 @@ export default function Bridge() {
             </div>
           </div>
           <button
-            className="w-full bg-gradient hover:bg-transparent hover:text-white border border-accent text-black py-3.5 text-lg font-bold flex flex-row justify-center items-center gap-2"
-            onClick={async () => {
+                className={`bg-transparent py-3 w-full text-white font-semibold border border-accent ${sending ? '' : 'bg-gradient hover:bg-transparent hover:text-white'} text-lg`}
+                disabled={sending}           
+                 onClick={async () => {
+               try { 
+                setSending(true);   
               await sendAsset();
+               }
+               catch(e) {
+                console.log(e);
+               }
+               setSending(false);   
+
             }}
           >
-            Send <SendHorizonal size={20} />
+            { sending ? <LoadingIndicator text="Sending ..."/> :
+                          <div className="flex items-center justify-center gap-2">
+             <SendHorizonal size={20} /> <p className="font-bold text-white">Send </p></div> }
           </button>
         </div>
       </div>

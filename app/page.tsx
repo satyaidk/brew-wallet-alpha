@@ -17,15 +17,17 @@ import {
 import DotPattern from "@/components/ui/dot-pattern";
 import { cn } from "@/lib/utils";
 import Footer from "./components/Footer/Footer";
+import LoadingIndicator from "@/components/ui/loader";
 
 export default function Home() {
   const { address, isConnecting, isDisconnected } = useAccount();
   const { setWalletInfo } = useLoginProvider();
-  const { walletInfo } = useWalletInfo();
+  const { walletInfo, status } = useWalletInfo();
+  const [authenticating, setAuthenticating] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const { disconnect } = useDisconnect();
 
-  console.log();
 
   return (
     <div className="flex flex-col gap-12 md:gap-16 justify-center items-center h-full text-center pt-12 md:pt-0 px-6">
@@ -54,27 +56,9 @@ export default function Home() {
           </h2>
         )}
         <div className="flex flex-col gap-2 items-center justify-center w-full border border-accent rounded-md bg-black p-4 z-50">
-          {walletInfo ? (
-            <div className="grid grid-cols-5 gap-2 items-center justify-between px-6 bg-white text-black w-full py-2.5">
-              <div></div>
-              <div className="flex flex-row gap-2 items-center justify-center col-span-3 w-full">
-                <Image
-                  src={walletInfo.icon || "/icons/wallet.svg"}
-                  alt="Wallet Icon"
-                  width={25}
-                  height={25}
-                />
-                <p className="">{Truncate(address, 12, "...")}</p>
-              </div>
-              <div className="flex justify-end items-center">
-                <LogOut
-                  onClick={() => {
-                    disconnect();
-                    setWalletInfo(undefined);
-                  }}
-                />
-              </div>
-            </div>
+          { status == "loading" ? (
+              <LoadingIndicator text="Loading Brewit ..." color="#fff"/>
+           
           ) : (
             <div className="flex flex-col gap-2 items-center justify-center w-full">
               <button
@@ -82,6 +66,7 @@ export default function Home() {
                 onClick={async () => {
                   // Handle the passkey auth here
                   try {
+                    setAuthenticating(true);
                     const passkey = await connectPassKey(
                       "BrewitWallet",
                       WebAuthnMode.Login
@@ -91,21 +76,26 @@ export default function Home() {
                   } catch (e) {
                     console.log(e);
                   }
+                  setAuthenticating(false);
                 }}
               >
-                <Image
+              
+               
+                { authenticating ? <LoadingIndicator text="Logging in ..." image="/icons/passkey.svg" color="#000"/> :
+                 <> <Image
                   src={"/icons/passkey.svg"}
                   alt="Wallet Icon"
                   width={30}
                   height={30}
                 />
-                <p className="font-bold text-black">Login Now </p>
+                <p className="font-bold text-black">Login Now </p> </>}
               </button>
               <div>(OR)</div>
               <button
                 className="py-2.5 text-lg text-white w-full border border-accent rounded-md"
                 onClick={async () => {
                   try {
+                    setCreating(true);
                     const passkey = await connectPassKey(
                       `Brew Wallet ${new Date().toLocaleDateString("en-GB")}`,
                       WebAuthnMode.Register
@@ -115,9 +105,12 @@ export default function Home() {
                   } catch (e) {
                     console.log(e);
                   }
+                  setCreating(false);
                 }}
               >
-                Create New
+
+               { creating ? <LoadingIndicator text="Creating Account ..."/> :
+                "Create New" }
               </button>
             </div>
           )}

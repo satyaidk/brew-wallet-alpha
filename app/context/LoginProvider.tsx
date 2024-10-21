@@ -16,6 +16,7 @@ import { normalize } from "viem/ens";
 import useAccountStore from "../store/account/account.store";
 import { getModules } from "../logic/module";
 interface LoginContextProps {
+  status: "loading"| "ready" | "notready",
   walletInfo: any;
   accountInfo: any;
   setWalletInfo: (info: any) => void;
@@ -26,6 +27,7 @@ interface LoginContextProps {
 }
 // Create the context
 export const LoginContext = createContext<LoginContextProps>({
+  status:  "loading",
   walletInfo: undefined,
   accountInfo: undefined,
   setWalletInfo: () => {},
@@ -48,6 +50,7 @@ export const LoginProvider = ({
   const wallet = useDefaultWalletInfo();
   const account = useDefaultAccount();
   const [walletInfo, setWalletInfo] = useState<any>(wallet.walletInfo);
+  const [walletStatus, setWalletStatus]= useState<"loading" | "ready" | "notready"> ("loading");
   const [accountInfo, setAccountInfo] = useState<any>(account);
   const [ensname, setEnsname] = useState<any>(undefined);
   const [ensavatar, setEnsavatar] = useState<any>(undefined);
@@ -88,8 +91,10 @@ export const LoginProvider = ({
           setValidator(_validator);
           setAccountInfo(accountClient.account);
           setWalletInfo({ name: "passkey", icon: "/icons/safe.svg" });
+          setWalletStatus("ready");
         }
       } else {
+        setWalletStatus("notready");
         setWalletInfo(wallet.walletInfo);
         if (account?.address && account?.address !== accountInfo?.address) {
           setAccountInfo(account);
@@ -110,6 +115,7 @@ export const LoginProvider = ({
   return (
     <LoginContext.Provider
       value={{
+        status: walletStatus,
         walletInfo,
         accountInfo,
         setWalletInfo,
