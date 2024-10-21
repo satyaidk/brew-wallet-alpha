@@ -584,7 +584,7 @@ export default function Investments() {
         <DialogContent className="bg-black dark:bg-white flex flex-col justify-start items-start gap-4 rounded-none sm:rounded-none max-w-lg mx-auto border border-accent">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-white text-xl">
-              Create a Investment
+              Create an Investment
             </DialogTitle>
             <DialogDescription className="text-base text-accent mt-0">
               Create a new investment plan to store your assets and earn yield.

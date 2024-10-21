@@ -127,7 +127,7 @@ export const getSmartAccountClient = async ( { chainId, nonceKey, signer, addres
     middleware: {
       gasPrice: async () =>
         (await pimlicoBundlerClient.getUserOperationGasPrice()).fast,
-      // sponsorUserOperation: paymasterClient.sponsorUserOperation
+      ...(NetworkUtil.getNetworkById(parseInt(chainId))?.type !== "fork" ? { sponsorUserOperation: paymasterClient.sponsorUserOperation } : {})
     }
   }).extend(erc7579Actions({ entryPoint: ENTRYPOINT_ADDRESS_V07 })) 
 

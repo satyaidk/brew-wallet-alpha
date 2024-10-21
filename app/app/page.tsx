@@ -165,15 +165,10 @@ export default function App() {
               <div className="flex flex-col-reverse justify-start items-start gap-1">
                 <div className="flex flex-row justify-center items-start gap-2">
                   <h1 className="text-4xl font-black text-white">
-                    $
-                    {totalBalance === 0 ? (
-                      0
-                    ) : (
-                      <NumberTicker
-                        className="text-white"
-                        value={Number(totalBalance.toFixed(0)) || 0}
-                      />
-                    )}
+                    
+                   
+                  { tokenDetails[0] ? `${fixDecimal(tokenDetails[0]?.balance, 2)} ${tokenDetails[0]?.name}` : null }
+                    
                   </h1>
                   <button
                     className="mt-1"
@@ -419,13 +414,11 @@ export default function App() {
                       ).toFixed(2)}
                     </div> */}
                     <div className="text-left md:text-right uppercase md:w-32">
-                      {token.balance < 0.1 ? (
+                      {(
                         <span>
-                          {Truncate(token.balance.toString(), 12, "...")}
+                          {fixDecimal(token.balance, 6)}
                         </span>
-                      ) : (
-                        <span>{fixDecimal(token.balance, 2)}</span>
-                      )}{" "}
+                      ) }{" "}
                       {token.name}
                     </div>
                     <div className="md:w-36">

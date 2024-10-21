@@ -75,7 +75,7 @@ export const networks = {
   basefork: {    
 
     name: 'Base Fork',
-    type: 'mainnet',
+    type: 'fork',
     chainId: 84530,
     url: "https://node.zenguard.xyz/rpc/base",
     bundler: "https://node.zenguard.xyz/bundler/base",
@@ -130,7 +130,7 @@ export const networks = {
   },
   polygonfork: {
     name: 'Polygon',
-    type: 'mainnet',
+    type: 'fork',
     chainId: 1370,
     url: "https://node.zenguard.xyz/rpc/polygon",
     bundler: "https://node.zenguard.xyz/bundler/polygon",
