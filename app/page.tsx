@@ -32,10 +32,11 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-12 md:gap-16 justify-center items-center h-full text-center pt-12 md:pt-0 px-6">
       <div className="flex flex-col gap-20 items-center max-w-2xl">
-        <div className="flex flex-row justify-center items-center gap-4">
+        <div className="flex flex-row justify-center items-center gap-4 animate-pulse">
           <Image
             src={"/logo/icon.svg"}
-            alt="Zero Logo"
+            className="animate-pulse"
+            alt="Brewit Logo"
             width={80}
             height={80}
           />
@@ -62,7 +63,7 @@ export default function Home() {
           ) : (
             <div className="flex flex-col gap-2 items-center justify-center w-full">
               <button
-                className="flex flex-row gap-2 items-center justify-center border border-accent px-6 py-2.5 w-full button-gradient rounded-md"
+                className="flex font-bold flex-row gap-2 items-center justify-center border border-accent px-6 py-2.5 w-full button-gradient rounded-md"
                 onClick={async () => {
                   // Handle the passkey auth here
                   try {
@@ -85,8 +86,8 @@ export default function Home() {
                  <> <Image
                   src={"/icons/passkey.svg"}
                   alt="Wallet Icon"
-                  width={30}
-                  height={30}
+                  width={25}
+                  height={25}
                 />
                 <p className="font-bold text-black">Login Now </p> </>}
               </button>

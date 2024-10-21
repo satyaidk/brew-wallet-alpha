@@ -120,7 +120,8 @@ export default function Investments() {
   const { validator } = useLoginProvider();
 
   useEffect(() => {
-    (async () => {
+    (async () => {  
+      if(address) {
       const provider = await getJsonRpcProvider(chainId.toString());
       const token = getChainById(Number(chainId))?.tokens[fromToken].address;
       if (token == ZeroAddress) {
@@ -128,6 +129,7 @@ export default function Investments() {
       } else {
         setBalance(await getTokenBalance(token!, address, provider));
       }
+    }
     })();
   }, [chainId, address, fromToken]);
 

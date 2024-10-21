@@ -87,6 +87,9 @@ export default function App() {
 
       let updatedTokens = [];
 
+
+      if(address) {
+
       updatedTokens = await Promise.all(
         tokens!.map(async (token) => {
           const balance =
@@ -124,6 +127,7 @@ export default function App() {
         console.log(updatedTokens);
         setTokenVaultDetails(updatedTokens); // Tokens now contain their respective vault balances
       }
+    }
     })();
   }, [chainId, address]);
 

@@ -14,7 +14,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ text, image, color 
         alt="Loading indicator"
         width={30} // Set the desired width
         height={30} // Set the desired height
-        className="mr-2 h-5 w-5 animate-ping"
+        className="mr-2 h-6 w-6 animate-ping"
       />
       {text}
     </span>
