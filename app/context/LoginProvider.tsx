@@ -14,7 +14,7 @@ import { connectValidator } from "../logic/passkey";
 import { getSmartAccountClient } from "../logic/permissionless";
 import { normalize } from "viem/ens";
 import useAccountStore from "../store/account/account.store";
-import { getModules } from "../logic/module";
+import { getWebAuthnModule } from "../logic/module";
 interface LoginContextProps {
   status: "loading"| "ready" | "notready",
   walletInfo: any;
@@ -84,8 +84,7 @@ export const LoginProvider = ({
         const _validator = await connectValidator(chainId.toString(), passkey);
         const accountClient = await getSmartAccountClient({
           chainId: chainId.toString(),
-          validators: (await getModules(_validator)).validators,
-          executors: (await getModules(_validator)).executors
+          validators: [ await getWebAuthnModule(_validator) ],
         });
         if (!accountInfo?.address) {
           setValidator(_validator);

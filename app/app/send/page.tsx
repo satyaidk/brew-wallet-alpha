@@ -19,18 +19,22 @@ import {
   useAccount,
   useLoginProvider,
 } from "../../context/LoginProvider";
-import { sendTransaction, Transaction } from "@/app/logic/module";
+import { buildUseSmartSession, getSpendPolicy, sendTransaction, Transaction } from "@/app/logic/module";
 import { getJsonRpcProvider } from "@/app/logic/web3";
 import { ZeroAddress, formatEther, parseEther, parseUnits } from "ethers";
 import {
   buildTransferToken,
   fixDecimal,
+  getSpendableTokenInfo,
   getTokenBalance,
   getTokenDecimals,
 } from "@/app/logic/utils";
-import { Hex } from "viem";
+import { Hex, toFunctionSelector } from "viem";
 import Truncate from "@/app/utils/truncate";
 import LoadingIndicator from "@/components/ui/loader";
+import { privateKeyToAccount } from "viem/accounts";
+import { loadAccountInfo } from "@/app/utils/storage";
+import { computeConfigId, getActionId, getPermissionId } from "@/app/logic/smartsessions/smartsessions";
 
 interface GasChainType {
   name: string;
@@ -45,8 +49,11 @@ export default function Bridge() {
   );
     useState<number>(0);
   const [selectedTokenID, setSelectedTokenID] = useState<number>(0);
+  const accountInfo  = loadAccountInfo()
 
   const [balance, setBalance] = useState<string>("0");
+  const [spendableBalance, setSpendableBalance] = useState<string>("0");
+
   const [sending, setSending] = useState(false);
 
 
@@ -58,7 +65,10 @@ export default function Bridge() {
   const { validator } = useLoginProvider();
 
   async function sendAsset() {
+
+
     try {
+      setSending(true);
       const token = getChainById(chainId)?.tokens[selectedTokenID].address;
       let call: Transaction = {
         to: "" as Hex,
@@ -85,30 +95,50 @@ export default function Bridge() {
         )) as Hex;
         call.to = token as Hex;
       }
+
+
+      // if(accountInfo.selected!= 0) {
+
+      //   const sessionPk = "0xdd1db445a79e51f16d08c4e5dc5810c4b5f29882b8610058cfecd425ac293712"
+      //   const sessionOwner = privateKeyToAccount(sessionPk)
+      //   const useSmartSession = await buildUseSmartSession(chainId.toString(), sessionOwner)
+      //   await sendTransaction(chainId.toString(), [call], sessionOwner, address, "sessionkey", useSmartSession)    
+
+      // } else {
       const result = await sendTransaction(
         chainId.toString(),
         [call],
         validator,
         address
       );
+    // }
     } catch (e) {
       console.log("error", e);
     }
+    setSending(false);
   }
 
   useEffect(() => {
     (async () => {
-      if (address) {
+      try {
         const provider = await getJsonRpcProvider(chainId.toString());
         const token = getChainById(chainId)?.tokens[selectedTokenID].address;
         if (token == ZeroAddress) {
           setBalance(formatEther(await provider.getBalance(address)));
         } else {
           setBalance(await getTokenBalance(token!, address, provider));
+
+          // setSpendableBalance((await getSpendableTokenInfo(chainId.toString(), token!, address)).balance)
+
         }
       }
+      catch(e) {
+        console.log(e)
+        
+      }
+
     })();
-  }, [chainId, selectedTokenID, address]);
+  }, [chainId, selectedTokenID, address, sending]);
 
   return (
     <div className="w-full h-full text-white border border-accent flex flex-col justify-start md:justify-center items-start md:items-center gap-6 px-4 py-4 md:py-6">
@@ -120,7 +150,8 @@ export default function Bridge() {
           <div className="flex flex-col gap-2">
             <div className="flex flex-row justify-end items-center text-sm absolute top-1.5 right-6">
               <div className="flex flex-row justify-center items-center gap-1">
-                <div>{ fixDecimal(balance, 4)} ETH</div>
+                {/* <div>{`${fixDecimal(balance, 4)} (Spendable: ${fixDecimal(spendableBalance, 4)} ) ${getChainById(chainId)?.tokens[selectedTokenID]?.name}`} </div> */}
+                <div>{`${fixDecimal(balance, 4)} ${getChainById(chainId)?.tokens[selectedTokenID]?.name}`} </div>
                 <button className="font-bold" onClick={()=> { setTokenValue(balance)}}>Max</button>
               </div>
             </div>

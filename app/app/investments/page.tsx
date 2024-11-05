@@ -887,10 +887,11 @@ export default function Investments() {
               try {
                 const provider = await getJsonRpcProvider(chainId.toString());
 
-                const sessionKeyCall = await buildAddSessionKey(
-                  chainId.toString()
+                const sessionKeyCalls = await buildAddSessionKey(
+                  chainId.toString(),
+                  address
                 );
-                const createJobCall = await buildDCAJob(
+                const createJobCalls = await buildDCAJob(
                   chainId.toString(),
                   address,
                   investValue,
@@ -909,7 +910,7 @@ export default function Investments() {
                 );
                 await sendTransaction(
                   chainId.toString(),
-                  [sessionKeyCall, createJobCall],
+                  sessionKeyCalls.concat(createJobCalls),
                   validator,
                   address
                 );
