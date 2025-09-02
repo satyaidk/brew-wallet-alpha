@@ -49,7 +49,11 @@ export const LoginProvider = ({
   const { chainId } = useAccountStore();
   const wallet = useDefaultWalletInfo();
   const account = useDefaultAccount();
-  const [walletInfo, setWalletInfo] = useState<any>(wallet.walletInfo);
+  const [walletInfo, setWalletInfo] = useState<any>(
+    wallet.walletInfo && !wallet.walletInfo.icon?.includes('data:') 
+      ? wallet.walletInfo 
+      : { name: "wallet", icon: "/icons/wallet.svg" }
+  );
   const [walletStatus, setWalletStatus]= useState<"loading" | "ready" | "notready"> ("loading");
   const [accountInfo, setAccountInfo] = useState<any>(account);
   const [ensname, setEnsname] = useState<any>(undefined);
@@ -63,6 +67,13 @@ export const LoginProvider = ({
     setEnsname(_ensname);
     setEnsavatar(_ensavatar);
   }, [_ensavatar, _ensname]);
+
+  useEffect(() => {
+    // Update walletInfo when wallet.walletInfo changes, but avoid base64 data
+    if (wallet.walletInfo && !wallet.walletInfo.icon?.includes('data:')) {
+      setWalletInfo(wallet.walletInfo);
+    }
+  }, [wallet.walletInfo]);
 
   useEffect(() => {
 
@@ -89,12 +100,17 @@ export const LoginProvider = ({
         if (!accountInfo?.address) {
           setValidator(_validator);
           setAccountInfo(accountClient.account);
-          setWalletInfo({ name: "passkey", icon: "/icons/safe.svg" });
+          setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
           setWalletStatus("ready");
         }
       } else {
         setWalletStatus("notready");
-        setWalletInfo(wallet.walletInfo);
+        // Only use wallet.walletInfo if it doesn't contain base64 data
+        if (wallet.walletInfo && !wallet.walletInfo.icon?.includes('data:')) {
+          setWalletInfo(wallet.walletInfo);
+        } else {
+          setWalletInfo({ name: "wallet", icon: "/icons/wallet.svg" });
+        }
         if (account?.address && account?.address !== accountInfo?.address) {
           setAccountInfo(account);
         }

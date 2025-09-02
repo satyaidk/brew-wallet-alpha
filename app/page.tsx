@@ -73,7 +73,7 @@ export default function Home() {
                       WebAuthnMode.Login
                     );
                     storePasskey(passkey);
-                    setWalletInfo({ name: "passkey", icon: "/icons/safe.svg" });
+                    setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
                   } catch (e) {
                     console.log(e);
                   }
@@ -102,7 +102,7 @@ export default function Home() {
                       WebAuthnMode.Register
                     );
                     storePasskey(passkey);
-                    setWalletInfo({ name: "passkey", icon: "/icons/safe.svg" });
+                    setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
                   } catch (e) {
                     console.log(e);
                   }

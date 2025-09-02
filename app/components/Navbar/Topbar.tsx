@@ -203,7 +203,7 @@ export default function Topbar() {
 const WalletButton = (props: any) => {
   return (
     <div className="flex flex-row gap-3 items-center justify-start md:justify-between text-sm px-0 md:px-4 bg-black text-white py-2">
-      <Image
+      <img
         src={props.walletInfo?.icon || "/icons/wallet.svg"}
         alt="Wallet Icon"
         width={25}
