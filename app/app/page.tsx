@@ -145,7 +145,8 @@ export default function App() {
     });
   }
   return (
-    <div className=" flex flex-col items-start justify-center gap-6 w-full h-full">
+    <TooltipProvider>
+      <div className=" flex flex-col items-start justify-center gap-6 w-full h-full">
       <div className="w-full border border-accent flex flex-col gap-6 px-4 py-4 md:py-6">
         <div className="w-full flex flex-col md:flex-row gap-4 justify-between items-center relative">
           <div className="flex flex-col md:flex-row gap-4 justify-start items-start md:items-center w-full">
@@ -427,48 +428,42 @@ export default function App() {
                     </div>
                     <div className="md:w-36">
                       <div className="grid grid-cols-3 place-items-center gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              {" "}
-                              <SendHorizonal
-                                size={25}
-                                onClick={() => router.push("/app/send")}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Send</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              {" "}
-                              <RefreshCcw
-                                size={25}
-                                onClick={() => router.push("/app/swap")}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Swap</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              {" "}
-                              <PiggyBank
-                                size={25}
-                                onClick={() => router.push("/app/investments")}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Investments</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {" "}
+                            <SendHorizonal
+                              size={25}
+                              onClick={() => router.push("/app/send")}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Send</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {" "}
+                            <RefreshCcw
+                              size={25}
+                              onClick={() => router.push("/app/swap")}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Swap</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {" "}
+                            <PiggyBank
+                              size={25}
+                              onClick={() => router.push("/app/investments")}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Investments</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </div>
                   </div>
@@ -641,6 +636,7 @@ export default function App() {
           </TabsContent>
         </div>
       </Tabs>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

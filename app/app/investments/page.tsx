@@ -273,7 +273,8 @@ export default function Investments() {
   };
 
   return (
-    <div className="flex flex-col gap-8 justify-start p-4 items-start border border-accent w-full h-full relative">
+    <TooltipProvider>
+      <div className="flex flex-col gap-8 justify-start p-4 items-start border border-accent w-full h-full relative">
       {Boolean(
         tokenVaultDetails.filter((tokenVault) => tokenVault.vaultBalance > 0)
           .length
@@ -565,23 +566,21 @@ export default function Investments() {
           </div>
         </Tabs>
       </div>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger
-            onClick={() => {
-              console.log("asda");
-              resetDateTime();
-              setDialogOpen(true);
-            }}
-            className="bg-black text-white p-4 rounded-full bg-gradient shadow-lg font-medium text-lg flex flex-row justify-center items-center gap-2 border border-accent hover:border-white hover:bg-transparent hover:text-white absolute bottom-4 right-4 z-50"
-          >
-            <PlusSquareIcon size={30} />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Create a Plan</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger
+          onClick={() => {
+            console.log("asda");
+            resetDateTime();
+            setDialogOpen(true);
+          }}
+          className="bg-black text-white p-4 rounded-full bg-gradient shadow-lg font-medium text-lg flex flex-row justify-center items-center gap-2 border border-accent hover:border-white hover:bg-transparent hover:text-white absolute bottom-4 right-4 z-50"
+        >
+          <PlusSquareIcon size={30} />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Create a Plan</p>
+        </TooltipContent>
+      </Tooltip>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-black dark:bg-white flex flex-col justify-start items-start gap-4 rounded-none sm:rounded-none max-w-lg mx-auto border border-accent">
           <DialogHeader className="space-y-1">
@@ -975,6 +974,7 @@ export default function Investments() {
           </button>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

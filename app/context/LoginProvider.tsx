@@ -76,47 +76,73 @@ export const LoginProvider = ({
   }, [wallet.walletInfo]);
 
   useEffect(() => {
+    let isMounted = true;
 
     (async () => {
-      const passkey = loadPasskey();
-      if (passkey) {
-        const _validator = await connectValidator(chainId.toString(), passkey);
-
-        setValidator(_validator);
+      try {
+        const passkey = loadPasskey();
+        if (passkey && isMounted) {
+          const _validator = await connectValidator(chainId.toString(), passkey);
+          if (isMounted) {
+            setValidator(_validator);
+            setWalletStatus("ready");
+          }
+        }
+      } catch (error) {
+        console.error("Error connecting validator:", error);
+        if (isMounted) {
+          setWalletStatus("notready");
+        }
       }
     })();
-  }, [  chainId ]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [chainId]);
 
   useEffect(() => {
+    let isMounted = true;
 
     (async () => {
-      const passkey = loadPasskey();
-      if (passkey) {
-        const _validator = await connectValidator(chainId.toString(), passkey);
-        const accountClient = await getSmartAccountClient({
-          chainId: chainId.toString(),
-          validators: [ await getWebAuthnModule(_validator) ],
-        });
-        if (!accountInfo?.address) {
-          setValidator(_validator);
-          setAccountInfo(accountClient.account);
-          setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
-          setWalletStatus("ready");
+      try {
+        const passkey = loadPasskey();
+        if (passkey && !accountInfo?.address && isMounted) {
+          const _validator = await connectValidator(chainId.toString(), passkey);
+          const accountClient = await getSmartAccountClient({
+            chainId: chainId.toString(),
+            validators: [ await getWebAuthnModule(_validator) ],
+          });
+          
+          if (isMounted) {
+            setAccountInfo(accountClient.account);
+            setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
+            setWalletStatus("ready");
+          }
+        } else if (!passkey && isMounted) {
+          setWalletStatus("notready");
+          // Handle wallet connection
+          if (wallet.walletInfo && !wallet.walletInfo.icon?.includes('data:')) {
+            setWalletInfo(wallet.walletInfo);
+          } else {
+            setWalletInfo({ name: "wallet", icon: "/icons/wallet.svg" });
+          }
+          if (account?.address) {
+            setAccountInfo(account);
+          }
         }
-      } else {
-        setWalletStatus("notready");
-        // Only use wallet.walletInfo if it doesn't contain base64 data
-        if (wallet.walletInfo && !wallet.walletInfo.icon?.includes('data:')) {
-          setWalletInfo(wallet.walletInfo);
-        } else {
-          setWalletInfo({ name: "wallet", icon: "/icons/wallet.svg" });
-        }
-        if (account?.address && account?.address !== accountInfo?.address) {
-          setAccountInfo(account);
+      } catch (error) {
+        console.error("Error in login provider:", error);
+        if (isMounted) {
+          setWalletStatus("notready");
         }
       }
     })();
-  }, [wallet, account, accountInfo?.address]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [wallet?.walletInfo, account?.address, chainId]);
 
   useEffect(() => {
     if (!walletInfo && !loadPasskey()) {
@@ -125,7 +151,7 @@ export const LoginProvider = ({
     if (walletInfo && pathname === "/") {
       router.push("/app");
     }
-  }, [pathname, router, walletInfo, accountInfo]);
+  }, [pathname, router, walletInfo]);
 
   return (
     <LoginContext.Provider

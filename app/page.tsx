@@ -25,6 +25,7 @@ export default function Home() {
   const { walletInfo, status } = useWalletInfo();
   const [authenticating, setAuthenticating] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { disconnect } = useDisconnect();
 
@@ -56,6 +57,11 @@ export default function Home() {
             Login or Signup with your passkey
           </h2>
         )}
+        {error && (
+          <div className="text-red-500 text-sm text-center p-2 bg-red-500/10 border border-red-500/20 rounded">
+            {error}
+          </div>
+        )}
         <div className="flex flex-col gap-2 items-center justify-center w-full border border-accent rounded-md bg-black p-4 z-50">
           { status == "loading" ? (
               <LoadingIndicator text="Loading Brewit ..." color="#fff"/>
@@ -68,6 +74,7 @@ export default function Home() {
                   // Handle the passkey auth here
                   try {
                     setAuthenticating(true);
+                    setError(null);
                     const passkey = await connectPassKey(
                       "BrewitWallet",
                       WebAuthnMode.Login
@@ -75,9 +82,11 @@ export default function Home() {
                     storePasskey(passkey);
                     setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
                   } catch (e) {
-                    console.log(e);
+                    console.error("Login error:", e);
+                    setError("Login failed. Please try again.");
+                  } finally {
+                    setAuthenticating(false);
                   }
-                  setAuthenticating(false);
                 }}
               >
               
@@ -97,6 +106,7 @@ export default function Home() {
                 onClick={async () => {
                   try {
                     setCreating(true);
+                    setError(null);
                     const passkey = await connectPassKey(
                       `Brew Wallet ${new Date().toLocaleDateString("en-GB")}`,
                       WebAuthnMode.Register
@@ -104,9 +114,11 @@ export default function Home() {
                     storePasskey(passkey);
                     setWalletInfo({ name: "passkey", icon: "/icons/passkey-icon.svg" });
                   } catch (e) {
-                    console.log(e);
+                    console.error("Account creation error:", e);
+                    setError("Account creation failed. Please try again.");
+                  } finally {
+                    setCreating(false);
                   }
-                  setCreating(false);
                 }}
               >
 

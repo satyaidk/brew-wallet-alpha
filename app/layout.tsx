@@ -7,8 +7,10 @@ import { cookieToInitialState } from "wagmi";
 import { config } from "@/app/wallet-connect/config";
 import Web3ModalProvider from "@/app/wallet-connect/context";
 import { LoginProvider } from "./context/LoginProvider";
+import { ZapperProvider } from "./context/ZapperProvider";
 import { Toaster } from "@/components/ui/toaster";
 import ShineBorder from "@/components/ui/shine-border";
+import APIKeyNotification from "./components/APIKeyNotification";
 
 const human_sans = localFont({
   src: [
@@ -105,13 +107,18 @@ export default function RootLayout({
           <div className=" text-white max-w-screen-2xl w-full mx-auto z-50">
             <div className=" flex flex-col items-center justify-center w-full">
               <Web3ModalProvider initialState={initialState}>
-                <LoginProvider>{children}</LoginProvider>
+                <LoginProvider>
+                  <ZapperProvider>
+                    {children}
+                  </ZapperProvider>
+                </LoginProvider>
               </Web3ModalProvider>
             </div>
           </div>
         </ShineBorder>
 
         <Toaster />
+        <APIKeyNotification />
       </body>
     </html>
   );
